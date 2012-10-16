@@ -131,12 +131,24 @@ class DefaultSinglePlayerController extends AbstractSinglePlayerController {
                 }
             }
 
-            //has whole fleet been set? If so this listener removes
-            //itself from the board and adds a new listener to opponents
-            //board to begin play
-            if(whichShip == 5)
-                board.beginPlay(new OpponentGridListener(), this);
-            
+            //gives user option to reconfigure ships or begin play
+            if(whichShip == 5){
+                Object [] options = {"Go to War!", "Re-deploy"};
+                int option = JOptionPane.showOptionDialog
+                    (null, 
+                    "Deployment complete?", 
+                    "Set-up menu", 
+                     JOptionPane.YES_NO_OPTION, 
+                     JOptionPane.QUESTION_MESSAGE, 
+                     null, options, null);
+                
+                if(option == JOptionPane.YES_OPTION)
+                    board.beginPlay(new OpponentGridListener(), this);
+                else{
+                    restartSetUp();
+                    whichShip = 0;
+                }
+            }
             
         }
 
@@ -184,7 +196,6 @@ class DefaultSinglePlayerController extends AbstractSinglePlayerController {
         public void mouseReleased(MouseEvent e) {
             
         }
-        
     }
     
 

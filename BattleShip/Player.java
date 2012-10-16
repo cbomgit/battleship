@@ -61,4 +61,10 @@ abstract class Player {
            return HIT;
         }
    }
+   
+   void clearShipGrid(){
+       for(int y = 0; y < gridSize; y++)
+            for(int x = 0; x < gridSize; x++)
+                shipGrid[x][y] = null;
+   }
 }

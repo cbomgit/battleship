@@ -64,4 +64,9 @@ public abstract class AbstractSinglePlayerController extends AbstractController 
     public void playerOneSetHorizontalShip(int x, int y, int whichShip){
         playerOne.setHorizontalShip(x, y, whichShip);
     }
+    
+    protected void restartSetUp(){
+        board.clearShipGrid();
+        playerOne.clearShipGrid();
+    }
 }

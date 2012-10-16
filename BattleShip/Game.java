@@ -42,19 +42,28 @@ public class Game {
     }
     
     public Game(AbstractView board, AbstractSinglePlayerController controller){
-        gameBoardOne = board == null ? new DefaultView(DEFAULT_GRID_SIZE) : board;
-        theController = controller == null ? new DefaultSinglePlayerController
-                (gameBoardOne, DEFAULT_GRID_SIZE) : controller;
+        
+        gameBoardOne = board == null ? new DefaultView(DEFAULT_GRID_SIZE) 
+                                     : board;
+        
+        theController = controller == null ? 
+            new DefaultSinglePlayerController(gameBoardOne, DEFAULT_GRID_SIZE) 
+            : controller;
         
         gameBoardOne.setVisible(true);
     }
     
     public Game(AbstractView boardOne, AbstractView boardTwo, AbstractTwoPlayerController controller){
         
-        gameBoardOne = boardOne == null ? new DefaultView(DEFAULT_GRID_SIZE) : boardOne;
-        gameBoardOne = boardTwo == null ? new DefaultView(DEFAULT_GRID_SIZE) : boardTwo;
-        theController = controller == null ? new DefaultTwoPlayerController
-                (gameBoardOne, gameBoardTwo, DEFAULT_GRID_SIZE) : controller;
+        gameBoardOne = boardOne == null ? new DefaultView(DEFAULT_GRID_SIZE) 
+                                        : boardOne;
+        
+        gameBoardOne = boardTwo == null ? new DefaultView(DEFAULT_GRID_SIZE) 
+                                        : boardTwo;
+        
+        theController = controller == null ? 
+            new DefaultTwoPlayerController(gameBoardOne, gameBoardTwo, DEFAULT_GRID_SIZE) 
+            : controller;
         
         gameBoardOne.setVisible(true);
         gameBoardTwo.setVisible(false);

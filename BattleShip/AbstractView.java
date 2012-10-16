@@ -35,4 +35,7 @@ public abstract class AbstractView extends JFrame{
     public abstract void beginPlay(MouseListener newListener, MouseListener oldListener);
     
     public abstract Point getCoordinates(MouseEvent e);
+
+    abstract void clearShipGrid(); 
+    
 }

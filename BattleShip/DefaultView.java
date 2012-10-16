@@ -37,6 +37,8 @@ class DefaultView extends AbstractView{
     }
     
     //disables the users ship grid and enables the opponent grid
+    //listener is removed from ship grid and a new listener is created for the 
+    //shot grid
     @Override
     public void beginPlay(MouseListener newListener, MouseListener oldListener){
         
@@ -197,6 +199,13 @@ class DefaultView extends AbstractView{
             b = (GridButton) e.getComponent();
         
         return new Point(b.x, b.y);
+    }
+
+    @Override
+    void clearShipGrid() {
+        for(int y = 0; y < gridSize; y++)
+            for(int x = 0; x < gridSize; x++)
+                shipGrid[x][y].setBackground(Color.BLACK);
     }
     
     private static class GridButton extends JButton {
