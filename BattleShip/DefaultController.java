@@ -8,7 +8,7 @@ import javax.swing.JOptionPane;
  *
  * @author Christian
  */
-class DefaultSinglePlayerController extends AbstractSinglePlayerController {
+class DefaultController extends AbstractController {
     
     //defines event generated messages
     public static final String INSTRUCTION = "Left-Click for vertical ship."
@@ -18,10 +18,15 @@ class DefaultSinglePlayerController extends AbstractSinglePlayerController {
     //mouse click event
     private boolean canSetVerticalShip;
     private boolean canSetHorizontalShip;
+    private int whichShip;
+    private AbstractView board;
+    private User playerOne;
+    private Agent playerTwo;
     
-    public DefaultSinglePlayerController(AbstractView b, int gridSize){
+    public DefaultController(AbstractView b, int gridSize){
         
-        super(gridSize);
+        playerOne = new User(gridSize);
+        playerTwo = new Agent(gridSize);
         board = b;
         canSetVerticalShip = false;
         canSetHorizontalShip = false;
@@ -34,16 +39,16 @@ class DefaultSinglePlayerController extends AbstractSinglePlayerController {
         @Override
         public void mouseClicked(MouseEvent e) {
             
-            Point cell = board.getCoordinates(e);
+            Point cell = board.getCoordinatesOfAClickedCell(e);
 
             /*must verify that user has not clicked on a square that has 
              * already been marked as a hit or a miss
              */
-            if(canUserGuessHere(cell.x, cell.y)){
+            if(playerOne.verifyNewTarget(cell.x, cell.y)){
                     
                 //user takes a turn
-                int result = getResultFromAgent(cell.x, cell.y);
-                updateUserShotGrid(result, cell.x, cell.y);
+                int result = playerTwo.isAHit(cell.x, cell.y);
+                playerOne.processResult(result, cell.x, cell.y);
                 board.updateShotGrid(result, cell.x, cell.y);
 
                 
@@ -53,10 +58,10 @@ class DefaultSinglePlayerController extends AbstractSinglePlayerController {
                 }
 
                 //computer opponent takes a turn
-                Point target = getGuessFromAgent();
-                result = getResultFromUser(target.x, target.y);
-                sendResultToAgent(result, target.x, target.y);
-                board.updateShipGrid(result, target.x, target.y);
+                cell = playerTwo.generateTarget();
+                result = playerOne.isAHit(cell.x, cell.y);
+                playerTwo.processResult(result, cell.x, cell.y);
+                board.updateShipGrid(result, cell.x, cell.y);
 
                 if(result == Player.ALL_SHIPS_SUNK){
                     JOptionPane.showMessageDialog(board, "You lose!!!");
@@ -98,18 +103,18 @@ class DefaultSinglePlayerController extends AbstractSinglePlayerController {
         @Override
         public void mouseClicked(MouseEvent e) {
             
-            Point cell = board.getCoordinates(e);
+            Point cell = board.getCoordinatesOfAClickedCell(e);
             
                 
-            int shipSize = getUserShipSize(whichShip);
+            int shipSize = playerOne.getShipSize(whichShip);
             
             if(e.getButton() == MouseEvent.BUTTON1){
                 
                 if(canSetVerticalShip){
                     board.colorVerticalShip(cell.x, cell.y, shipSize); 
-                    if(canUserSetHorizontalShipHere(cell.x, cell.y, shipSize))
+                    if(playerOne.canSetHorizontalShip(cell.x, cell.y, shipSize))
                         board.removeHorizontalShip(cell.x + 1, cell.y, shipSize - 1);
-                    playerOneSetVerticalShip(cell.x, cell.y, whichShip);
+                    playerOne.setVerticalShip(cell.x, cell.y, whichShip);
 
                     whichShip++;
                     canSetVerticalShip = false;
@@ -121,9 +126,9 @@ class DefaultSinglePlayerController extends AbstractSinglePlayerController {
                 
                 if(canSetHorizontalShip){
                     board.colorHorizontalShip(cell.x, cell.y, shipSize);
-                    if(canUserSetVerticalShipHere(cell.x, cell.y, shipSize))
+                    if(playerOne.canSetVerticalShip(cell.x, cell.y, shipSize))
                         board.removeVerticalShip(cell.x, cell.y + 1, shipSize - 1);
-                    playerOneSetHorizontalShip(cell.x, cell.y, whichShip);
+                     playerOne.setHorizontalShip(cell.x, cell.y, whichShip);
 
                     whichShip++;
                     canSetVerticalShip = false;
@@ -145,27 +150,27 @@ class DefaultSinglePlayerController extends AbstractSinglePlayerController {
                 if(option == JOptionPane.YES_OPTION)
                     board.beginPlay(new OpponentGridListener(), this);
                 else{
-                    restartSetUp();
+                    board.clearShipGrid();
+                    playerOne.clearShipGrid();
                     whichShip = 0;
                 }
             }
-            
         }
 
         @Override
         public void mouseEntered(MouseEvent e) {
             
-            Point cell = board.getCoordinates(e);
+            Point cell = board.getCoordinatesOfAClickedCell(e);
             
-            int shipSize = getUserShipSize(whichShip);
+            int shipSize = playerOne.getShipSize(whichShip);
             board.updateMessage(INSTRUCTION + " Set your " 
-                    + GamePiece.shipName(getUserShipSize(whichShip)), false);
+                    + GamePiece.shipName(playerOne.getShipSize(whichShip)), false);
 
-            if(canUserSetVerticalShipHere(cell.x, cell.y, shipSize)){
+            if(playerOne.canSetVerticalShip(cell.x, cell.y, shipSize)){
                 board.colorVerticalShip(cell.x, cell.y, shipSize);
                 canSetVerticalShip = true;
             }
-            if(canUserSetHorizontalShipHere(cell.x, cell.y, shipSize)){
+            if(playerOne.canSetHorizontalShip(cell.x, cell.y, shipSize)){
                 board.colorHorizontalShip(cell.x, cell.y, shipSize);
                 canSetHorizontalShip = true;
             }
@@ -173,9 +178,9 @@ class DefaultSinglePlayerController extends AbstractSinglePlayerController {
 
         @Override
         public void mouseExited(MouseEvent e) {
-            Point cell = board.getCoordinates(e);
+            Point cell = board.getCoordinatesOfAClickedCell(e);
             
-            int shipSize = getUserShipSize(whichShip);
+            int shipSize = playerOne.getShipSize(whichShip);
 
             if(canSetVerticalShip)
                 board.removeVerticalShip(cell.x, cell.y, shipSize);

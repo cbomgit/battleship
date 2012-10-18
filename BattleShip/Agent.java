@@ -61,56 +61,8 @@ class Agent extends Player {
         }
     }
     
-    //verifies that a ship does not overlap other ships and does not fall 
-    //outside of the grid. (x, y) is ships starting position and size is the 
-    //ships length
-    private boolean canSetVerticalShip(int x, int y, int whichShip) {
-
-        if (y + fleet[whichShip].size() > gridSize) {
-            return false;
-        }
-
-        for (int i = 0; i < fleet[whichShip].size(); i++) {
-            if (shipGrid[x][y + i] != null) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private boolean canSetHorizontalShip(int x, int y, int whichShip) {
-
-        if (x + fleet[whichShip].size() > gridSize) {
-            return false;
-        }
-
-        for (int i = 0; i < fleet[whichShip].size(); i++) {
-            if (shipGrid[x + i][y] != null) {
-                return false;
-            }
-        }
-
-        return true;
-    }
     
-    
-    //allocates a ship to the agent's ship grid
-    private void setHorizontalShip(int x, int y,  int whichShip) {
-
-        for (int i = 0; i < fleet[whichShip].size(); i++) {
-            shipGrid[x + i][y] = fleet[whichShip];
-        }
-    }
-
-    private void setVerticalShip(int x, int y, int whichShip) {
-
-        for (int i = 0; i < fleet[whichShip].size(); i++) {
-            shipGrid[x][y + i] = fleet[whichShip];
-        }
-    }
-    
-    Point generateTarget() {
+    public Point generateTarget() {
         
         Point guess = new Point(0, 0, 0);
 
@@ -175,7 +127,8 @@ class Agent extends Player {
      * used to decide how to compute a weight grid, based on one of three 
      * possible scenarios.
      */
-    void processResult(int result, int x, int y) {
+   @Override
+    public void processResult(int result, int x, int y) {
             
         resultsGrid[x][y] = result;
         
@@ -353,4 +306,9 @@ class Agent extends Player {
             ndx++;
         }
     }
+
+   @Override
+   boolean verifyNewTarget(int x, int y) {
+      throw new UnsupportedOperationException("Not supported yet.");
+   }
 }

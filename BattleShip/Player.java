@@ -7,11 +7,11 @@ package BattleShip;
  */
 abstract class Player {
     
-   int [][] resultsGrid;
-   int gridSize;
-   int shipsActive;
-   GamePiece [] fleet;
-   GamePiece[][] shipGrid;
+   protected int [][] resultsGrid;
+   protected int gridSize;
+   protected int shipsActive;
+   protected GamePiece [] fleet;
+   protected GamePiece[][] shipGrid;
    
    public static final int ALL_SHIPS_SUNK = -4;
    public static final int SHIP_SUNK = -3;
@@ -67,4 +67,48 @@ abstract class Player {
             for(int x = 0; x < gridSize; x++)
                 shipGrid[x][y] = null;
    }
+   
+   public void setHorizontalShip(int x, int y,  int whichShip) {
+
+        for (int i = 0; i < fleet[whichShip].size(); i++) {
+            shipGrid[x + i][y] = fleet[whichShip];
+        }
+    }
+
+   public void setVerticalShip(int x, int y, int whichShip) {
+
+        for (int i = 0; i < fleet[whichShip].size(); i++) {
+            shipGrid[x][y + i] = fleet[whichShip];
+        }
+   }
+   
+   //verifies that a ship starting at (x, y) and of length size
+    //does not overlap any other ships and does not fall out of the grid
+    public boolean canSetHorizontalShip(int x, int y, int size) {
+        
+        if(x + size > gridSize)
+            return false;
+        
+        for(int i = 0; i < size; i++)
+            if(shipGrid[x + i][y] != null)
+                return false;
+        
+        return true;
+    }
+   
+    public boolean canSetVerticalShip(int x, int y, int size) {
+        
+        if(y + size > gridSize)
+            return false;
+        
+        for(int i = 0; i < size; i++)
+            if(shipGrid[x][y + i] != null)
+                return false;
+        
+        return true;
+    }
+    
+    public abstract void processResult(int result, int x, int y);
+
+    abstract boolean verifyNewTarget(int x, int y);
 }

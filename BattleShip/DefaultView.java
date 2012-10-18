@@ -192,9 +192,10 @@ class DefaultView extends AbstractView{
     }
 
     @Override
-    public Point getCoordinates(MouseEvent e) {
+    public Point getCoordinatesOfAClickedCell(MouseEvent e) {
         
         GridButton b = null;
+        
         if(e.getComponent() instanceof GridButton)
             b = (GridButton) e.getComponent();
         
