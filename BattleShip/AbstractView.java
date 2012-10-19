@@ -23,9 +23,9 @@ public abstract class AbstractView extends JFrame{
     
     public abstract void updateShipGrid(int result, int x, int y);
     
-    public abstract void colorVerticalShip(int x, int y, int size);
+    public abstract void paintVerticalShip(int x, int y, int size);
     
-    public abstract void colorHorizontalShip(int x, int y, int size);
+    public abstract void paintHorizontalShip(int x, int y, int size);
     
     public abstract void removeHorizontalShip(int x, int y, int size);
     
@@ -33,9 +33,9 @@ public abstract class AbstractView extends JFrame{
         
     //changes the state of the game from set up to regular play
     public abstract void beginPlay(MouseListener newListener, MouseListener oldListener);
-    
-    public abstract Point getCoordinatesOfAClickedCell(MouseEvent e);
+        
+    public abstract Point getCoordinatesOfMouseClick(MouseEvent e);
 
-    abstract void clearShipGrid(); 
+    public abstract void clearTheBoard(); 
     
 }

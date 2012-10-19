@@ -9,23 +9,17 @@ import java.util.Random;
 
 class Agent extends Player {
     
-    int [][] weightGrid;
-    private int [] enemyFleet;
-    private Stack<Point> hits;
-    private Stack<Point> mustExplore;
+    int [][] weightGrid;//likelihood of a ship overlapping x, y
+    private int [] enemyFleet;//keep track of which ships are sunk
+    private Stack<Point> hits;//keep track of previous hits
+    private Stack<Point> mustExplore;//cells that might have hits adjacent
+    //tells agent it should search all cells around a cell x, y
     private boolean findAllDirections;
     
     Agent(int theSize) {
         
-        super(theSize);      
-        
-        enemyFleet = new int[5];
-        enemyFleet[0] = GamePiece.AIRCRAFT_CARRIER;
-        enemyFleet[1] = GamePiece.DESTROYER;
-        enemyFleet[2] = GamePiece.BATTLESHIP;
-        enemyFleet[3] = GamePiece.SUBMARINE;
-        enemyFleet[4] = GamePiece.PATROL_BOAT;
-        
+        super(theSize);    
+        setEnemyFleet();
         weightGrid = new int[gridSize][gridSize];
         findAllDirections = false;
         
@@ -35,6 +29,15 @@ class Agent extends Player {
         setShipGrid(theSize);
     }
     
+    private void setEnemyFleet(){
+       
+      enemyFleet = new int[5];
+      enemyFleet[0] = GamePiece.AIRCRAFT_CARRIER;
+      enemyFleet[1] = GamePiece.DESTROYER;
+      enemyFleet[2] = GamePiece.BATTLESHIP;
+      enemyFleet[3] = GamePiece.SUBMARINE;
+      enemyFleet[4] = GamePiece.PATROL_BOAT;
+    }
     
     //randomly allocates ships to Agent's shipGrid
     private void setShipGrid(int theSize) {
@@ -49,19 +52,19 @@ class Agent extends Player {
             y = r.nextInt(Integer.MAX_VALUE) % theSize;
 
             if (direction == GamePiece.VERTICAL 
-                && canSetVerticalShip(x, y, whichShip)) {
+                && canSetVerticalShip(x, y, fleet[whichShip].size())) {
                     setVerticalShip(x, y, whichShip);
                     whichShip++;
             } 
             else if (direction == GamePiece.HORIZONTAL 
-                && canSetHorizontalShip(x, y, whichShip)) {
+                && canSetHorizontalShip(x, y, fleet[whichShip].size())) {
                     setHorizontalShip(x, y, whichShip);
                     whichShip++;
             }
         }
     }
     
-    
+    //choose the cell with the highest probability of containing a ship
     public Point generateTarget() {
         
         Point guess = new Point(0, 0, 0);
@@ -100,9 +103,9 @@ class Agent extends Player {
         return guess;
     }
     
+    //returns a Point object adjacent to (x, y)
     private Point guessAroundAHit(int x, int y){
-        
-        //returns a Point object adjacent to (x, y)
+             
         Point a = new Point(x + 1, y, 0);
         Point b = new Point(x - 1, y, 0);
         Point c = new Point(x , y - 1, 0);
@@ -174,8 +177,8 @@ class Agent extends Player {
         
     }
     
-    /*helper methods for computeWeightGrid methods. Determine if a ship can be 
-     * placed at a location [x][y].
+    /*helper methods for computeWeightGrid methods. Determine if a ship can
+     * overlap location [x][y].
      */
     private boolean isValidHorizontal(int x, int y, int size){
         
@@ -204,10 +207,10 @@ class Agent extends Player {
     }
     
     /*overloaded methods for computing the weight grid. If a ship can overlap
-     * a grid - meaning it doesn't fall out of the grid and it doesn't overlap
+     * a cell - meaning it doesn't fall out of the grid and it doesn't overlap
      * any misses or sunk ships - then the value of all of the cells that ship
      * will overlap will increase by one. This is repeated for every cell on the
-     * board, in both directions, and for all five ships.
+     * board, in both directions, and for all active enemy ships.
      */
     private void computeWeightGrid(){
         
@@ -252,6 +255,7 @@ class Agent extends Player {
         weightGrid[x][y] = Player.HIT;
     }
     
+    //sets weightGrid to 0
     private void clearWeightGrid(){
         
         for(int i = 0; i < gridSize; i++)
@@ -306,9 +310,4 @@ class Agent extends Player {
             ndx++;
         }
     }
-
-   @Override
-   boolean verifyNewTarget(int x, int y) {
-      throw new UnsupportedOperationException("Not supported yet.");
-   }
 }

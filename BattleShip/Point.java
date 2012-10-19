@@ -5,7 +5,7 @@ package BattleShip;
  *
  * @author Christian
  */
-public class Point implements Comparable<Point>{
+public class Point {
     
     public int x;
     public int y;
@@ -44,17 +44,6 @@ public class Point implements Comparable<Point>{
             z = temp;
         }
         return w;
-    }
-
-    @Override
-    public int compareTo(Point rhs) {
-        
-        int diff = x - rhs.x;
-        
-        if(diff == 0)
-            return y - rhs.y;
-        
-        else return diff;
     }
     
     @Override

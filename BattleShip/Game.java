@@ -1,9 +1,6 @@
 
 package BattleShip;
 
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 
 /**
  *
@@ -12,9 +9,7 @@ import javax.swing.JOptionPane;
 public class Game {
 
     private AbstractView gameBoardOne;
-    private AbstractView gameBoardTwo;
-    private AbstractController controllerOne;
-    private AbstractController controllerTwo;
+    private AbstractController controller;
     //the controller will contain references to the players
     
     private static final int DEFAULT_GRID_SIZE = 11;
@@ -24,67 +19,17 @@ public class Game {
         /*default constructor creates a one player game with the default
          * controller and game board
          */
-        int numPlayers = howManyPlayers();
-        
-        if(numPlayers == JOptionPane.YES_OPTION){
-            gameBoardOne = new DefaultView(DEFAULT_GRID_SIZE);
-            controllerOne = new DefaultController(gameBoardOne, DEFAULT_GRID_SIZE);
-            gameBoardTwo = null;
-            controllerTwo = null;
-            gameBoardOne.setVisible(true);
-        }
-        else if(numPlayers == JOptionPane.NO_OPTION){
-            gameBoardOne = new DefaultView(DEFAULT_GRID_SIZE);
-            gameBoardTwo = new DefaultView(DEFAULT_GRID_SIZE);
-            controllerOne = new DefaultController(gameBoardOne, DEFAULT_GRID_SIZE);
-            gameBoardOne.setVisible(true);
-            gameBoardTwo.setVisible(false);
-        }
+         gameBoardOne = new DefaultView(DEFAULT_GRID_SIZE);
+         gameBoardOne.setVisible(true);
+         controller =  new DefaultController(gameBoardOne, DEFAULT_GRID_SIZE);
+
+    }
+    
+    public Game(AbstractView myView){
        
-    }
-    
-    public Game(AbstractView board, AbstractController controller){
-        
-        gameBoardOne = board == null ? new DefaultView(DEFAULT_GRID_SIZE) 
-                                     : board;
-        
-        controllerOne = controller == null ? 
-            new DefaultController(gameBoardOne, DEFAULT_GRID_SIZE) 
-            : controller;
-        
-        gameBoardTwo = null;
-        controllerTwo = null;
-        gameBoardOne.setVisible(true);
-    }
-    
-    public Game(AbstractView boardOne, AbstractView boardTwo, 
-            AbstractController c1, AbstractController c2){
-        
-        gameBoardOne = boardOne == null ? new DefaultView(DEFAULT_GRID_SIZE) 
-                                        : boardOne;
-        
-        gameBoardOne = boardTwo == null ? new DefaultView(DEFAULT_GRID_SIZE) 
-                                        : boardTwo;
-        
-        controllerOne = c1 == null ? 
-            new DefaultController(gameBoardOne, DEFAULT_GRID_SIZE) : c1;
-        
-        controllerOne = c2 == null ? 
-            new DefaultController(gameBoardOne, DEFAULT_GRID_SIZE) : c2;
-        
-        gameBoardOne.setVisible(true);
-        gameBoardTwo.setVisible(false);
-        
-    }
-    
-    
-    private int howManyPlayers(){
-        
-        Object [] options = {"1 Player", "2 Players"};
-        
-        return JOptionPane.showOptionDialog(null, "How many playesr?", 
-                "Player Select", JOptionPane.YES_NO_OPTION, 
-                    JOptionPane.QUESTION_MESSAGE, null, options, null);
+       gameBoardOne = myView == null ? new DefaultView(DEFAULT_GRID_SIZE ) : myView;
+       gameBoardOne.setVisible(true);
+       controller = new DefaultController(gameBoardOne, DEFAULT_GRID_SIZE);
     }
     
     /**

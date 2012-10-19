@@ -11,49 +11,42 @@ import java.awt.GridLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.*;
-
-
-//adapter class for JButton. Allows easy retrieval of a buttons position in grid
-//when it is clicked.
-
-//adapter class for JButton. Allows easy retrieval of a buttons position in grid
-//when it is clicked.
 /**
  *
  * @author Christian
  */
 class DefaultView extends AbstractView{
     
-    private GridButton [][] shipGrid;
-    private GridButton [][] hitMissGrid;
+    private GridButton [][] shipGrid; //display User's ships
+    private GridButton [][] hitMissGrid;//display users guesses
     JTextArea gameMessage;
     private int gridSize;
     
     public DefaultView(int theSize){
         
         gridSize = theSize;
-        resetGameBoard();
+        createGameBoard();
         layoutTheBoard();
     }
     
     //disables the users ship grid and enables the opponent grid
-    //listener is removed from ship grid and a new listener is created for the 
+    //listener is removed from ship grid and a new listener is registered to the 
     //shot grid
     @Override
     public void beginPlay(MouseListener newListener, MouseListener oldListener){
         
-        gameMessage.setText("Fire at your opponent");
-        for(int y = 0; y < gridSize; y++)
+      gameMessage.setText("Fire at your opponent");
+         for(int y = 0; y < gridSize; y++)
             for(int x = 0; x < gridSize; x++){
-                shipGrid[x][y].removeMouseListener(oldListener);
-                shipGrid[x][y].setEnabled(false);
-                hitMissGrid[x][y].setEnabled(true);
-                hitMissGrid[x][y].addMouseListener(newListener);
+               shipGrid[x][y].removeMouseListener(oldListener);
+               shipGrid[x][y].setEnabled(false);
+               hitMissGrid[x][y].setEnabled(true);
+               hitMissGrid[x][y].addMouseListener(newListener);
             }
     }
     
     //cretes the objects for an empty game board
-    private void resetGameBoard(){
+    private void createGameBoard(){
         
         shipGrid = new GridButton[gridSize][gridSize];
         hitMissGrid = new GridButton[gridSize][gridSize];
@@ -121,14 +114,14 @@ class DefaultView extends AbstractView{
      * ship grid
      */
     @Override
-    public void colorVerticalShip(int x, int y, int size) {
+    public void paintVerticalShip(int x, int y, int size) {
         
         for(int i = 0; i < size; i++)
             shipGrid[x][y + i].setBackground(Color.GRAY);
     }
     
     @Override
-    public void colorHorizontalShip(int x, int y, int size) {
+    public void paintHorizontalShip(int x, int y, int size) {
         
         for(int i = 0; i < size; i++)
             shipGrid[x + i][y].setBackground(Color.GRAY);
@@ -147,6 +140,7 @@ class DefaultView extends AbstractView{
             shipGrid[x + i][y].setBackground(Color.BLACK);
     }
 
+    //refresh view to indicate result of opponent guesses
     @Override
     public void updateShotGrid(int result, int x, int y) {
         
@@ -164,7 +158,8 @@ class DefaultView extends AbstractView{
         
         
     }
-
+    
+    //refresh view to indicate result of user guesses
     @Override
     public void updateShipGrid(int result, int x, int y) {
         if(result == User.MISS){
@@ -183,6 +178,7 @@ class DefaultView extends AbstractView{
         
     }
     
+    
     @Override
     public void updateMessage(String message, boolean append){
         if(append)
@@ -191,8 +187,10 @@ class DefaultView extends AbstractView{
             gameMessage.setText(message);
     }
 
+    //mouse event represents a mouse click on a grid. 
+    //returns (x, y) location of click
     @Override
-    public Point getCoordinatesOfAClickedCell(MouseEvent e) {
+    public Point getCoordinatesOfMouseClick(MouseEvent e) {
         
         GridButton b = null;
         
@@ -202,11 +200,14 @@ class DefaultView extends AbstractView{
         return new Point(b.x, b.y);
     }
 
+    //erases the board
     @Override
-    void clearShipGrid() {
+    public void clearTheBoard() {
         for(int y = 0; y < gridSize; y++)
-            for(int x = 0; x < gridSize; x++)
+            for(int x = 0; x < gridSize; x++){
                 shipGrid[x][y].setBackground(Color.BLACK);
+                hitMissGrid[x][y].setBackground(Color.BLACK);
+            }
     }
     
     private static class GridButton extends JButton {
