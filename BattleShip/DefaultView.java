@@ -16,6 +16,9 @@ import javax.swing.*;
  * @author Christian
  */
 class DefaultView extends AbstractView{
+   
+   public static final String INSTRUCTION = "Left-Click for vertical ship."
+            + " Right-Click for horizontal ship.";
     
     private GridButton [][] shipGrid; //display User's ships
     private GridButton [][] hitMissGrid;//display users guesses
@@ -33,7 +36,7 @@ class DefaultView extends AbstractView{
     //listener is removed from ship grid and a new listener is registered to the 
     //shot grid
     @Override
-    public void beginPlay(MouseListener newListener, MouseListener oldListener){
+    public void switchListenersToOpponentGrid(MouseListener newListener, MouseListener oldListener){
         
       gameMessage.setText("Fire at your opponent");
          for(int y = 0; y < gridSize; y++)
@@ -50,9 +53,7 @@ class DefaultView extends AbstractView{
         
         shipGrid = new GridButton[gridSize][gridSize];
         hitMissGrid = new GridButton[gridSize][gridSize];
-        gameMessage = new JTextArea("Left-Click for vertical ship."
-            + " Right-Click for horizontal ship.");
-        gameMessage.append(" Set your Aircraft Carrier");
+        gameMessage = new JTextArea(INSTRUCTION + " Set your Aircraft Carrier");
         
         for(int y = 0; y < gridSize; y++)
             for(int x = 0; x < gridSize; x++){
@@ -104,7 +105,7 @@ class DefaultView extends AbstractView{
     //method to register a mouselistener with each grid button
     //each button contains a reference to the same listener
     @Override
-    public void addListener(MouseListener m){
+    public void addListenerToShipGrid(MouseListener m){
         for(int y = 0; y < gridSize; y++)
             for(int x = 0; x < gridSize; x++)
                 shipGrid[x][y].addMouseListener(m);
@@ -180,11 +181,8 @@ class DefaultView extends AbstractView{
     
     
     @Override
-    public void updateMessage(String message, boolean append){
-        if(append)
-            gameMessage.append(message);
-        else
-            gameMessage.setText(message);
+    public void updateInstruction(String message){
+        gameMessage.setText(INSTRUCTION + " " + message);
     }
 
     //mouse event represents a mouse click on a grid. 
@@ -209,6 +207,17 @@ class DefaultView extends AbstractView{
                 hitMissGrid[x][y].setBackground(Color.BLACK);
             }
     }
+
+   @Override
+   public void switchListenersToGameSetUp(MouseListener old, MouseListener newListener) {
+      for(int y = 0; y < gridSize; y++)
+         for(int x = 0; x < gridSize; x++){
+            hitMissGrid[x][y].removeMouseListener(old);
+            hitMissGrid[x][y].setEnabled(false);
+            shipGrid[x][y].setEnabled(true);
+            shipGrid[x][y].addMouseListener(newListener);
+         }   
+   }
     
     private static class GridButton extends JButton {
     

@@ -45,6 +45,10 @@ abstract class Player {
        fleet[4] = new Ship("Patrol boat", 2);
 
    }
+   
+   public int getGridSize(){
+      return gridSize;
+   }
 
    //returns the result from an opponents guess at x, y
    public int opponentGuessedHere(int x, int y) {

@@ -10,9 +10,6 @@ import javax.swing.JOptionPane;
  */
 class DefaultController extends AbstractController {
     
-    //defines event generated messages
-    public static final String INSTRUCTION = "Left-Click for vertical ship."
-            + " Right-Click for horizontal ship.";
     
     //control variables prevent mouse exit event from interfering with
     //mouse click event
@@ -32,7 +29,7 @@ class DefaultController extends AbstractController {
         verticalShipPreviewSet = false;
         horizontalShipPreviewSet = false;
         whichShip = 0;
-        board.addListener(new GameSetUpListener());
+        board.addListenerToShipGrid(new GameSetUpListener());
     }
     
     private class OpponentGridListener implements MouseListener{
@@ -54,7 +51,7 @@ class DefaultController extends AbstractController {
 
                 
                 if(result == Player.ALL_SHIPS_SUNK)
-                   giveOptionForNewGameOrExit(true);
+                   giveOptionForNewGameOrExit(true, this);
 
                 //computer opponent takes a turn
                 cell = playerTwo.generateTarget();
@@ -63,7 +60,7 @@ class DefaultController extends AbstractController {
                 board.updateShipGrid(result, cell.x, cell.y);
 
                 if(result == Player.ALL_SHIPS_SUNK)
-                    giveOptionForNewGameOrExit(false);               
+                    giveOptionForNewGameOrExit(false, this);  
                 
             }
         }
@@ -99,7 +96,7 @@ class DefaultController extends AbstractController {
          */
 
         @Override
-        public void mouseClicked(MouseEvent e) {
+         public void mouseClicked(MouseEvent e) {
             
             Cell cell = board.getCoordinatesOfMouseClick(e);
             
@@ -136,7 +133,7 @@ class DefaultController extends AbstractController {
                 int option = giveOptionToReconfigureShips();
                 
                 if(option == JOptionPane.YES_OPTION)
-                    board.beginPlay(new OpponentGridListener(), this);
+                    board.switchListenersToOpponentGrid(new OpponentGridListener(), this);
                 else{
                     board.clearTheBoard();
                     playerOne.clearShipGrid();
@@ -151,8 +148,7 @@ class DefaultController extends AbstractController {
             Cell cell = board.getCoordinatesOfMouseClick(e);
             
             int shipSize = playerOne.getShipSize(whichShip);
-            board.updateMessage(INSTRUCTION + " Set your " 
-                    + Ship.shipName(playerOne.getShipSize(whichShip)), false);
+            board.updateInstruction(Ship.shipName(playerOne.getShipSize(whichShip)));
 
             if(playerOne.canSetVerticalShip(cell.x, cell.y, shipSize)){
                 board.paintVerticalShip(cell.x, cell.y, shipSize);
@@ -202,20 +198,25 @@ class DefaultController extends AbstractController {
     }
     
     //game is over.User can decide to ext app or begin a new game
-    public void giveOptionForNewGameOrExit(boolean whichPlayerWon){
+    public void giveOptionForNewGameOrExit(boolean whoWon, MouseListener current){
        
-       String message = whichPlayerWon ? "You win!!" : "You Lose!";
-       Object [] options = {"Play Again", "Quit"};
+      String message = whoWon ? "You win!!" : "You Lose!";
+      Object [] options = {"Play Again", "Quit"};
+
+      int option = JOptionPane.showOptionDialog(null, message, "Game Over", 
+                   JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+                   null, options, null);
        
-       int option = JOptionPane.showOptionDialog(null, message, "Game Over", 
-            JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
-            null, options, null);
        
-       if(option == JOptionPane.NO_OPTION)
+      if(option == JOptionPane.NO_OPTION)
           System.exit(0);
-       else{
-          
-       }
+      else{
+          board.clearTheBoard();
+          board.switchListenersToGameSetUp(current, new GameSetUpListener());
+          playerOne = new User(playerOne.getGridSize());
+          playerTwo = new Agent(playerTwo.getGridSize());
+          whichShip = 0;
+      }
      
     }
 }

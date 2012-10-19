@@ -13,11 +13,8 @@ import javax.swing.JFrame;
  * @author Christian
  */
 public abstract class AbstractView extends JFrame{
-   
-    
-    public abstract void addListener(MouseListener m);
-    
-    public abstract void updateMessage(String s, boolean append);
+       
+    public abstract void updateInstruction(String s);
     
     public abstract void updateShotGrid(int result, int x, int y);
     
@@ -30,9 +27,12 @@ public abstract class AbstractView extends JFrame{
     public abstract void removeHorizontalShip(int x, int y, int size);
     
     public abstract void removeVerticalShip(int x, int y, int size);
-        
-    //changes the state of the game from set up to regular play
-    public abstract void beginPlay(MouseListener newListener, MouseListener oldListener);
+    
+    public abstract void addListenerToShipGrid(MouseListener m);
+    
+    public abstract void switchListenersToOpponentGrid(MouseListener old, MouseListener newListener);
+    
+    public abstract void switchListenersToGameSetUp(MouseListener old, MouseListener newListener);
         
     public abstract Cell getCoordinatesOfMouseClick(MouseEvent e);
 
