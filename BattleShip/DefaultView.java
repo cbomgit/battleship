@@ -153,7 +153,7 @@ class DefaultView extends AbstractView{
             if(result == Player.HIT)
                 gameMessage.setText("You damaged CPU's ship at " + x + ", " + y);
             else
-                gameMessage.setText("You sunk CPU's " + GamePiece.shipName(result));
+                gameMessage.setText("You sunk CPU's " + Ship.shipName(result));
         }
         
         
@@ -171,7 +171,7 @@ class DefaultView extends AbstractView{
             if(result == Player.HIT)
                 gameMessage.append("\nCPU damaged your ship at " + x + ", " + y);
             else
-                gameMessage.append("\nCPU sunk your " + GamePiece.shipName(result));
+                gameMessage.append("\nCPU sunk your " + Ship.shipName(result));
         }
         
         
@@ -190,14 +190,14 @@ class DefaultView extends AbstractView{
     //mouse event represents a mouse click on a grid. 
     //returns (x, y) location of click
     @Override
-    public Point getCoordinatesOfMouseClick(MouseEvent e) {
+    public Cell getCoordinatesOfMouseClick(MouseEvent e) {
         
         GridButton b = null;
         
         if(e.getComponent() instanceof GridButton)
             b = (GridButton) e.getComponent();
         
-        return new Point(b.x, b.y);
+        return new Cell(b.x, b.y);
     }
 
     //erases the board

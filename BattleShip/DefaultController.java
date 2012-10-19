@@ -16,8 +16,8 @@ class DefaultController extends AbstractController {
     
     //control variables prevent mouse exit event from interfering with
     //mouse click event
-    private boolean canSetVerticalShip;
-    private boolean canSetHorizontalShip;
+    private boolean verticalShipPreviewSet;
+    private boolean horizontalShipPreviewSet;
     private int whichShip;
     
     private AbstractView board;
@@ -29,8 +29,8 @@ class DefaultController extends AbstractController {
         playerOne = new User(gridSize);
         playerTwo = new Agent(gridSize);
         board = b;
-        canSetVerticalShip = false;
-        canSetHorizontalShip = false;
+        verticalShipPreviewSet = false;
+        horizontalShipPreviewSet = false;
         whichShip = 0;
         board.addListener(new GameSetUpListener());
     }
@@ -40,7 +40,7 @@ class DefaultController extends AbstractController {
         @Override
         public void mouseClicked(MouseEvent e) {
             
-            Point cell = board.getCoordinatesOfMouseClick(e);
+            Cell cell = board.getCoordinatesOfMouseClick(e);
 
             /*must verify that user has not clicked on a square that has 
              * already been marked as a hit or a miss
@@ -101,36 +101,32 @@ class DefaultController extends AbstractController {
         @Override
         public void mouseClicked(MouseEvent e) {
             
-            Point cell = board.getCoordinatesOfMouseClick(e);
+            Cell cell = board.getCoordinatesOfMouseClick(e);
             
                 
             int shipSize = playerOne.getShipSize(whichShip);
             
             if(e.getButton() == MouseEvent.BUTTON1){
                 
-                if(canSetVerticalShip){
-                    board.paintVerticalShip(cell.x, cell.y, shipSize); 
-                    if(playerOne.canSetHorizontalShip(cell.x, cell.y, shipSize))
+                if(verticalShipPreviewSet){
+                    if(horizontalShipPreviewSet)
                         board.removeHorizontalShip(cell.x + 1, cell.y, shipSize - 1);
                     playerOne.setVerticalShip(cell.x, cell.y, whichShip);
 
                     whichShip++;
-                    canSetVerticalShip = false;
-                    canSetHorizontalShip = false;
+                    verticalShipPreviewSet = horizontalShipPreviewSet = false;
                 }
 
             }
             else if(e.getButton() == MouseEvent.BUTTON3){
                 
-                if(canSetHorizontalShip){
-                    board.paintHorizontalShip(cell.x, cell.y, shipSize);
-                    if(playerOne.canSetVerticalShip(cell.x, cell.y, shipSize))
+                if(horizontalShipPreviewSet){
+                    if(verticalShipPreviewSet)
                         board.removeVerticalShip(cell.x, cell.y + 1, shipSize - 1);
                      playerOne.setHorizontalShip(cell.x, cell.y, whichShip);
 
                     whichShip++;
-                    canSetVerticalShip = false;
-                    canSetHorizontalShip = false;
+                    verticalShipPreviewSet = horizontalShipPreviewSet =false;
                 }
             }
 
@@ -152,35 +148,35 @@ class DefaultController extends AbstractController {
         @Override
         public void mouseEntered(MouseEvent e) {
             
-            Point cell = board.getCoordinatesOfMouseClick(e);
+            Cell cell = board.getCoordinatesOfMouseClick(e);
             
             int shipSize = playerOne.getShipSize(whichShip);
             board.updateMessage(INSTRUCTION + " Set your " 
-                    + GamePiece.shipName(playerOne.getShipSize(whichShip)), false);
+                    + Ship.shipName(playerOne.getShipSize(whichShip)), false);
 
             if(playerOne.canSetVerticalShip(cell.x, cell.y, shipSize)){
                 board.paintVerticalShip(cell.x, cell.y, shipSize);
-                canSetVerticalShip = true;
+                verticalShipPreviewSet = true;
             }
             if(playerOne.canSetHorizontalShip(cell.x, cell.y, shipSize)){
                 board.paintHorizontalShip(cell.x, cell.y, shipSize);
-                canSetHorizontalShip = true;
+                horizontalShipPreviewSet = true;
             }
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
-            Point cell = board.getCoordinatesOfMouseClick(e);
+            Cell cell = board.getCoordinatesOfMouseClick(e);
             
             int shipSize = playerOne.getShipSize(whichShip);
 
-            if(canSetVerticalShip)
+            if(verticalShipPreviewSet)
                 board.removeVerticalShip(cell.x, cell.y, shipSize);
 
-            if(canSetHorizontalShip)
+            if(horizontalShipPreviewSet)
                 board.removeHorizontalShip(cell.x, cell.y, shipSize);
 
-            canSetHorizontalShip = canSetVerticalShip = false;
+            horizontalShipPreviewSet = verticalShipPreviewSet = false;
             
         }
 

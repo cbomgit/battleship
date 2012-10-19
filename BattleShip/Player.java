@@ -10,8 +10,8 @@ abstract class Player {
    int [][] resultsGrid;//keep track of hits/misses/ships sunk
    int gridSize;
    int shipsActive;
-   GamePiece [] fleet;//represents users own ships
-   GamePiece[][] shipGrid;
+   Ship [] fleet;//represents users own ships
+   Ship[][] shipGrid;
 
    public static final int ALL_SHIPS_SUNK = -4;
    public static final int SHIP_SUNK = -3;
@@ -24,8 +24,8 @@ abstract class Player {
        gridSize = theSize;
        shipsActive = 5;
        resultsGrid = new int[theSize][theSize];
-       shipGrid = new GamePiece[theSize][theSize];
-       fleet = new GamePiece[5];
+       shipGrid = new Ship[theSize][theSize];
+       fleet = new Ship[5];
 
        for(int y = 0; y < theSize; y++)
            for(int x = 0; x < theSize; x++){
@@ -38,11 +38,11 @@ abstract class Player {
 
    private void createShips(){
 
-       fleet[0] = new GamePiece("Aircraft carrier", 5);
-       fleet[1] = new GamePiece("Destroyer", 4);
-       fleet[2] = new GamePiece("Battleship", 3);
-       fleet[3] = new GamePiece("Submarine", 3);
-       fleet[4] = new GamePiece("Patrol boat", 2);
+       fleet[0] = new Ship("Aircraft carrier", 5);
+       fleet[1] = new Ship("Destroyer", 4);
+       fleet[2] = new Ship("Battleship", 3);
+       fleet[3] = new Ship("Submarine", 3);
+       fleet[4] = new Ship("Patrol boat", 2);
 
    }
 

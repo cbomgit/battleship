@@ -1,5 +1,7 @@
 package BattleShip;
 
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Random;
 
 /**
@@ -10,9 +12,9 @@ import java.util.Random;
 class Agent extends Player {
     
     int [][] weightGrid;//likelihood of a ship overlapping x, y
-    private int [] enemyFleet;//keep track of which ships are sunk
-    private Stack<Point> hits;//keep track of previous hits
-    private Stack<Point> mustExplore;//cells that might have hits adjacent
+    private LinkedList<Integer> enemyFleet;//keep track of which ships are sunk
+    private Stack<Cell> hits;//keep track of previous hits
+    private Stack<Cell> mustExplore;//cells that might have hits adjacent
     //tells agent it should search all cells around a cell x, y
     private boolean findAllDirections;
     
@@ -23,20 +25,20 @@ class Agent extends Player {
         weightGrid = new int[gridSize][gridSize];
         findAllDirections = false;
         
-        hits = new Stack<Point>();
-        mustExplore = new Stack<Point>();
+        hits = new Stack<Cell>();
+        mustExplore = new Stack<Cell>();
         computeWeightGrid();
         setShipGrid(theSize);
     }
     
     private void setEnemyFleet(){
        
-      enemyFleet = new int[5];
-      enemyFleet[0] = GamePiece.AIRCRAFT_CARRIER;
-      enemyFleet[1] = GamePiece.DESTROYER;
-      enemyFleet[2] = GamePiece.BATTLESHIP;
-      enemyFleet[3] = GamePiece.SUBMARINE;
-      enemyFleet[4] = GamePiece.PATROL_BOAT;
+      enemyFleet = new LinkedList<Integer>();
+      enemyFleet.add(Ship.AIRCRAFT_CARRIER);
+      enemyFleet.add(Ship.DESTROYER);
+      enemyFleet.add(Ship.BATTLESHIP);
+      enemyFleet.add(Ship.SUBMARINE);
+      enemyFleet.add(Ship.PATROL_BOAT);
     }
     
     //randomly allocates ships to Agent's shipGrid
@@ -51,12 +53,12 @@ class Agent extends Player {
             x = r.nextInt(Integer.MAX_VALUE) % theSize;
             y = r.nextInt(Integer.MAX_VALUE) % theSize;
 
-            if (direction == GamePiece.VERTICAL 
+            if (direction == Ship.VERTICAL 
                 && canSetVerticalShip(x, y, fleet[whichShip].size())) {
                     setVerticalShip(x, y, whichShip);
                     whichShip++;
             } 
-            else if (direction == GamePiece.HORIZONTAL 
+            else if (direction == Ship.HORIZONTAL 
                 && canSetHorizontalShip(x, y, fleet[whichShip].size())) {
                     setHorizontalShip(x, y, whichShip);
                     whichShip++;
@@ -65,9 +67,9 @@ class Agent extends Player {
     }
     
     //choose the cell with the highest probability of containing a ship
-    public Point generateTarget() {
+    public Cell generateTarget() {
         
-        Point guess = new Point(0, 0, 0);
+        Cell guess = new Cell(0, 0, 0);
 
         if(hits.isEmpty()){
             //no knowledge of any ships at this time, scan grid and guess
@@ -103,13 +105,13 @@ class Agent extends Player {
         return guess;
     }
     
-    //returns a Point object adjacent to (x, y)
-    private Point guessAroundAHit(int x, int y){
+    //returns a Cell object adjacent to (x, y)
+    private Cell guessAroundAHit(int x, int y){
              
-        Point a = new Point(x + 1, y, 0);
-        Point b = new Point(x - 1, y, 0);
-        Point c = new Point(x , y - 1, 0);
-        Point d = new Point(x, y + 1, 0);
+        Cell a = new Cell(x + 1, y, 0);
+        Cell b = new Cell(x - 1, y, 0);
+        Cell c = new Cell(x , y - 1, 0);
+        Cell d = new Cell(x, y + 1, 0);
         
         //only valid cells, and unexplored cells considered
         if(x < gridSize - 1 && resultsGrid[x + 1][y] == Player.UNKNOWN)
@@ -122,7 +124,7 @@ class Agent extends Player {
             d.data = weightGrid[x][y + 1];
         
         
-        return Point.max(a, b, c, d);
+        return Cell.max(a, b, c, d);
     }
     
     
@@ -146,17 +148,17 @@ class Agent extends Player {
         }
         else if(result == HIT){
             if(findAllDirections)//place hit on stack, to be revisited later
-                mustExplore.push(new Point(x, y));
+                mustExplore.push(new Cell(x, y));
             else{//hit is pushed onto stack, and the weight grid is computed 
                  //around it. Adjacent hits in same direction are preferred
                 findAllDirections = hits.isEmpty() ? true : false;
-                hits.push(new Point(x,y));
+                hits.push(new Cell(x,y));
                 computeWeightGrid(x, y);
             }
         }
         else{ //a ship has been sunk. Result == size of sunk ship
             resultsGrid[x][y] = SHIP_SUNK;
-            updateEnemyFleet(result); 
+            enemyFleet.remove(new Integer(result)); 
             handleSunkShip(result - 1, x, y); //marks ship as sunk on results grid
         }
     }
@@ -169,7 +171,7 @@ class Agent extends Player {
     private void transpose(int x, int y, int dir, int size){
         
         for(int i = 0; i < size; i++){
-            if(dir == GamePiece.HORIZONTAL)
+            if(dir == Ship.HORIZONTAL)
                 weightGrid[x + i][y]++;
             else
                 weightGrid[x][y + i]++;
@@ -215,15 +217,18 @@ class Agent extends Player {
     private void computeWeightGrid(){
         
         clearWeightGrid();
+        Iterator<Integer> itr = enemyFleet.iterator();
         
-        for(int whichShip = 0; whichShip < enemyFleet.length; whichShip++){
+        while(itr.hasNext()){
+           
+            int shipSize = itr.next();
             
             for(int y = 0; y < gridSize; y++){
                 for(int x = 0; x < gridSize; x++){
-                    if(isValidHorizontal(x, y, enemyFleet[whichShip]))
-                        transpose(x, y, GamePiece.HORIZONTAL, enemyFleet[whichShip]);
-                    if(isValidVertical(x, y, enemyFleet[whichShip]))
-                        transpose(x, y, GamePiece.VERTICAL, enemyFleet[whichShip]);
+                    if(isValidHorizontal(x, y, shipSize))
+                        transpose(x, y, Ship.HORIZONTAL, shipSize);
+                    if(isValidVertical(x, y, shipSize))
+                        transpose(x, y, Ship.VERTICAL, shipSize);
                 }
             }        
         } 
@@ -234,20 +239,23 @@ class Agent extends Player {
      * to enemyfleet[i] spaces.
      */
     private void computeWeightGrid(int x, int y){
+       
+        Iterator<Integer> itr = enemyFleet.iterator();
         
-        for(int k = 0; k < enemyFleet.length; k++){
-        
-            int fromX = x - enemyFleet[k] < 0 ? 0 : x - enemyFleet[k] + 1;
-            int fromY = y - enemyFleet[k] < 0 ? 0 : y - enemyFleet[k] + 1;
+        while(itr.hasNext()){
+           
+            int largestEnemyShip = itr.next();
+            int fromX = x - largestEnemyShip < 0 ? 0 : x - largestEnemyShip + 1;
+            int fromY = y - largestEnemyShip < 0 ? 0 : y - largestEnemyShip + 1;
 
             for(int i = 0; i < gridSize && fromX + i <= x; i++) {
-                if(isValidHorizontal(fromX + i, y, enemyFleet[k] ))
-                transpose(fromX + i, y, GamePiece.HORIZONTAL, enemyFleet[k]);
+                if(isValidHorizontal(fromX + i, y, largestEnemyShip ))
+                transpose(fromX + i, y, Ship.HORIZONTAL, largestEnemyShip);
             }
 
             for(int i = 0; i < gridSize && fromY + i <= y; i++) {
-                if(isValidVertical(x, fromY + i, enemyFleet[k]))
-                    transpose(x, fromY + i, GamePiece.VERTICAL, enemyFleet[k]);
+                if(isValidVertical(x, fromY + i, largestEnemyShip))
+                    transpose(x, fromY + i, Ship.VERTICAL, largestEnemyShip);
             }
             
         }
@@ -293,21 +301,5 @@ class Agent extends Player {
         }
             
         findAllDirections = false;
-    }
-    
-    private void updateEnemyFleet(int size) {
-        
-        /*when a ship is sunk, the opponent returns the size of the 
-         * sunk ship. This method uses that size to update the Agent's knowledge
-         * of the opponent's still standing fleet. 
-         */
-        int ndx = 0;
-        while(ndx < enemyFleet.length && enemyFleet[ndx] > size)
-            ndx++;
-        
-        while(ndx + 1 < enemyFleet.length){
-            enemyFleet[ndx] = enemyFleet[ndx + 1];
-            ndx++;
-        }
     }
 }

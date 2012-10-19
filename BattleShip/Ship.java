@@ -8,7 +8,7 @@ package BattleShip;
  *
  * @author Christian
  */
-class GamePiece {
+class Ship {
     
     private int lives;
     public int hits;
@@ -23,7 +23,7 @@ class GamePiece {
     public static final int VERTICAL = 0;
     public static final int HORIZONTAL = 1;
     
-    GamePiece(String n, int shipLives){
+    Ship(String n, int shipLives){
         
         lives = shipLives;
         name = n;

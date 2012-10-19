@@ -5,28 +5,28 @@ package BattleShip;
  *
  * @author Christian
  */
-public class Point {
+public class Cell {
     
     public int x;
     public int y;
     public int data;
     
-    public Point(int a, int b){
+    public Cell(int a, int b){
         x = a;
         y = b;
         data = Player.UNKNOWN;
     }
     
-    public Point(int a, int b, int s){
+    public Cell(int a, int b, int s){
         x = a;
         y = b;
         data = s;
     }
     
     
-    public static Point max(Point w, Point x, Point y, Point z){
+    public static Cell max(Cell w, Cell x, Cell y, Cell z){
         
-        Point temp;
+        Cell temp;
         
         if(x.data > w.data){
             temp = w;

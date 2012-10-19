@@ -34,8 +34,9 @@ public abstract class AbstractView extends JFrame{
     //changes the state of the game from set up to regular play
     public abstract void beginPlay(MouseListener newListener, MouseListener oldListener);
         
-    public abstract Point getCoordinatesOfMouseClick(MouseEvent e);
+    public abstract Cell getCoordinatesOfMouseClick(MouseEvent e);
 
     public abstract void clearTheBoard(); 
+    
     
 }
