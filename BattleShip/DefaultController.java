@@ -2,13 +2,14 @@ package BattleShip;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Timer;
 import javax.swing.JOptionPane;
 
 /**
  *
  * @author Christian
  */
-class DefaultController extends AbstractController {
+class DefaultController {
     
     
     //control variables prevent mouse exit event from interfering with
@@ -49,7 +50,6 @@ class DefaultController extends AbstractController {
                 playerOne.processResult(result, cell.x, cell.y);
                 board.updateShotGrid(result, cell.x, cell.y);
 
-                
                 if(result == Player.ALL_SHIPS_SUNK)
                    giveOptionForNewGameOrExit(true, this);
 

@@ -9,7 +9,7 @@ package BattleShip;
 public class Game {
 
     private AbstractView gameBoardOne;
-    private AbstractController controller;
+    private DefaultController controller;
     //the controller will contain references to the players
     
     private static final int DEFAULT_GRID_SIZE = 11;
