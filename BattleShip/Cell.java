@@ -11,6 +11,10 @@ public class Cell {
     public int y;
     public int data;
     
+    public Cell(){
+        this(0, 0);
+    }
+    
     public Cell(int a, int b){
         x = a;
         y = b;

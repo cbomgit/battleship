@@ -11,10 +11,11 @@ import java.util.Random;
 
 class Agent extends Player {
     
-    int [][] weightGrid;//likelihood of a ship overlapping x, y
+    int [][] weightGrid;                   //likelihood of a ship overlapping x, y
     private LinkedList<Integer> enemyFleet;//keep track of which ships are sunk
-    private Stack<Cell> hits;//keep track of previous hits
-    private Stack<Cell> mustExplore;//cells that might have hits adjacent
+    private Stack<Cell> hits;              //keep track of previous hits
+    private Stack<Cell> mustExplore;       //cells that might have hits adjacent
+    
     //tells agent it should search all cells around a cell x, y
     private boolean findAllDirections;
     
@@ -28,9 +29,12 @@ class Agent extends Player {
         hits = new Stack<Cell>();
         mustExplore = new Stack<Cell>();
         computeWeightGrid();
-        setShipGrid(theSize);
+        setShipGrid();
     }
     
+    /**
+     * creates list of still active enemy ships.
+     */
     private void setEnemyFleet(){
        
       enemyFleet = new LinkedList<Integer>();
@@ -41,35 +45,41 @@ class Agent extends Player {
       enemyFleet.add(Ship.PATROL_BOAT);
     }
     
-    //randomly allocates ships to Agent's shipGrid
-    private void setShipGrid(int theSize) {
+    /**
+     * randomly allocates ships to Agent's grid.
+     */
+    private void setShipGrid() {
 
         int direction, x, y;
+        Cell location = new Cell();
         Random r = new Random();
 
         for (int whichShip = 0; whichShip < 5;) {
 
             direction = r.nextInt(2);
-            x = r.nextInt(Integer.MAX_VALUE) % theSize;
-            y = r.nextInt(Integer.MAX_VALUE) % theSize;
+            location.x = r.nextInt(Integer.MAX_VALUE) % gridSize;
+            location.y = r.nextInt(Integer.MAX_VALUE) % gridSize;
 
             if (direction == Ship.VERTICAL 
-                && canSetVerticalShip(x, y, fleet[whichShip].size())) {
-                    setVerticalShip(x, y, whichShip);
+                && canSetVerticalShip(location, fleet[whichShip].size())) {
+                    setVerticalShip(location, whichShip);
                     whichShip++;
             } 
             else if (direction == Ship.HORIZONTAL 
-                && canSetHorizontalShip(x, y, fleet[whichShip].size())) {
-                    setHorizontalShip(x, y, whichShip);
+                && canSetHorizontalShip(location, fleet[whichShip].size())) {
+                    setHorizontalShip(location, whichShip);
                     whichShip++;
             }
         }
     }
     
-    //choose the cell with the highest probability of containing a ship
+    /**
+     * choose the cell with highest chance of being overlapped by a ship.
+     * @return generated guess
+     */
     public Cell generateTarget() {
         
-        Cell guess = new Cell(0, 0, 0);
+        Cell guess = new Cell();
 
         if(hits.isEmpty()){
             //no knowledge of any ships at this time, scan grid and guess
@@ -82,7 +92,7 @@ class Agent extends Player {
         }
         else{
             //one or more ships have not been sunk
-            guess = guessAroundAHit(hits.top().x, hits.top().y);
+            guess = guessAroundAHit(hits.top());
             
             /*all hits adjacent to hits.top() have been found. The agent now
              * looks at mustExplore to begin guessing in a particular direction
@@ -92,7 +102,8 @@ class Agent extends Player {
                 
                 /*no more cells to explore. Must backtrack and examine all cells
                  * on hits stack, marking them as SHIP_SUNK and attempting a 
-                 * guess on a cell adjacent to the top of the stack
+                 * guess on a cell adjacent to the top of the stack. This is 
+                 * the worst case for Agent. Should be fairly uncommon.
                  */
                 if(mustExplore.isEmpty())
                     resultsGrid[hits.top().x][hits.pop().y] = SHIP_SUNK;
@@ -105,61 +116,58 @@ class Agent extends Player {
         return guess;
     }
     
-    //returns a Cell object adjacent to (x, y)
-    private Cell guessAroundAHit(int x, int y){
+    /**
+     * @param hit.x x of hit
+     * @param hit.y y of hit
+     * @return highest rated cell around hit
+     */
+    private Cell guessAroundAHit(Cell hit){
              
-        Cell a = new Cell(x + 1, y, 0);
-        Cell b = new Cell(x - 1, y, 0);
-        Cell c = new Cell(x , y - 1, 0);
-        Cell d = new Cell(x, y + 1, 0);
+        Cell a = new Cell(hit.x + 1, hit.y, 0);
+        Cell b = new Cell(hit.x - 1, hit.y, 0);
+        Cell c = new Cell(hit.x , hit.y - 1, 0);
+        Cell d = new Cell(hit.x, hit.y + 1, 0);
         
         //only valid cells, and unexplored cells considered
-        if(x < gridSize - 1 && resultsGrid[x + 1][y] == Player.UNKNOWN)
-            a.data = weightGrid[x + 1][y];
-        if(x > 0 && resultsGrid[x - 1][y] == Player.UNKNOWN)
-            b.data = weightGrid[x - 1][y];
-        if(y > 0 && resultsGrid[x][y - 1] == Player.UNKNOWN)
-            c.data = weightGrid[x][y - 1];
-        if(y < gridSize - 1 && resultsGrid[x][y + 1] == Player.UNKNOWN)
-            d.data = weightGrid[x][y + 1];
+        if(hit.x < gridSize - 1 && resultsGrid[hit.x + 1][hit.y] == Player.UNKNOWN)
+            a.data = weightGrid[hit.x + 1][hit.y];
+        if(hit.x > 0 && resultsGrid[hit.x - 1][hit.y] == Player.UNKNOWN)
+            b.data = weightGrid[hit.x - 1][hit.y];
+        if(hit.y > 0 && resultsGrid[hit.x][hit.y - 1] == Player.UNKNOWN)
+            c.data = weightGrid[hit.x][hit.y - 1];
+        if(hit.y < gridSize - 1 && resultsGrid[hit.x][hit.y + 1] == Player.UNKNOWN)
+            d.data = weightGrid[hit.x][hit.y + 1];
         
         
         return Cell.max(a, b, c, d);
     }
     
-    
-    /* recieves the result of the last shot from the controller. This result is
-     * used to decide how to compute a weight grid, based on one of three 
-     * possible scenarios.
-     */
    @Override
-    public void processResult(int result, int x, int y) {
+    public void processResult(int result, Cell lastAttempt) {
             
-        resultsGrid[x][y] = result;
+        resultsGrid[lastAttempt.x][lastAttempt.y] = result;
         
         if(result == MISS){
-            if(hits.isEmpty())//no knowledge of any ships at this time
-                computeWeightGrid();//continue guessing
+            if(hits.isEmpty())
+                computeWeightGrid();
             else{
-                //place on hit stack. all adjacent hits must be found
-                computeWeightGrid(hits.top().x, hits.top().y);
+                computeWeightGrid(hits.top());
                 findAllDirections = true;
             }
         }
         else if(result == HIT){
-            if(findAllDirections)//place hit on stack, to be revisited later
-                mustExplore.push(new Cell(x, y));
-            else{//hit is pushed onto stack, and the weight grid is computed 
-                 //around it. Adjacent hits in same direction are preferred
+            if(findAllDirections)
+                mustExplore.push(new Cell(lastAttempt.x, lastAttempt.y));
+            else{
                 findAllDirections = hits.isEmpty() ? true : false;
-                hits.push(new Cell(x,y));
-                computeWeightGrid(x, y);
+                hits.push(new Cell(lastAttempt.x, lastAttempt.y));
+                computeWeightGrid(lastAttempt);
             }
         }
         else{ //a ship has been sunk. Result == size of sunk ship
-            resultsGrid[x][y] = SHIP_SUNK;
+            resultsGrid[lastAttempt.x][lastAttempt.y] = SHIP_SUNK;
             enemyFleet.remove(new Integer(result)); 
-            handleSunkShip(result - 1, x, y); //marks ship as sunk on results grid
+            handleSunkShip(result - 1, lastAttempt);
         }
     }
     
@@ -238,29 +246,29 @@ class Agent extends Player {
      * the exception of the row and column where the initial hit was made out
      * to enemyfleet[i] spaces.
      */
-    private void computeWeightGrid(int x, int y){
+    private void computeWeightGrid(Cell hit){
        
         Iterator<Integer> itr = enemyFleet.iterator();
         
         while(itr.hasNext()){
            
             int largestEnemyShip = itr.next();
-            int fromX = x - largestEnemyShip < 0 ? 0 : x - largestEnemyShip + 1;
-            int fromY = y - largestEnemyShip < 0 ? 0 : y - largestEnemyShip + 1;
+            int fromX = hit.x - largestEnemyShip < 0 ? 0 : hit.x - largestEnemyShip + 1;
+            int fromY = hit.y - largestEnemyShip < 0 ? 0 : hit.y - largestEnemyShip + 1;
 
-            for(int i = 0; i < gridSize && fromX + i <= x; i++) {
-                if(isValidHorizontal(fromX + i, y, largestEnemyShip ))
-                transpose(fromX + i, y, Ship.HORIZONTAL, largestEnemyShip);
+            for(int i = 0; i < gridSize && fromX + i <= hit.x; i++) {
+                if(isValidHorizontal(fromX + i, hit.y, largestEnemyShip ))
+                transpose(fromX + i, hit.y, Ship.HORIZONTAL, largestEnemyShip);
             }
 
-            for(int i = 0; i < gridSize && fromY + i <= y; i++) {
-                if(isValidVertical(x, fromY + i, largestEnemyShip))
-                    transpose(x, fromY + i, Ship.VERTICAL, largestEnemyShip);
+            for(int i = 0; i < gridSize && fromY + i <= hit.y; i++) {
+                if(isValidVertical(hit.x, fromY + i, largestEnemyShip))
+                    transpose(hit.x, fromY + i, Ship.VERTICAL, largestEnemyShip);
             }
             
         }
         
-        weightGrid[x][y] = Player.HIT;
+        weightGrid[hit.x][hit.y] = Player.HIT;
     }
     
     //sets weightGrid to 0
@@ -271,7 +279,7 @@ class Agent extends Player {
                 weightGrid[j][i] = 0;
     }
     
-    private void handleSunkShip(int size, int lastHitX, int lastHitY) {
+    private void handleSunkShip(int size, Cell lastHit) {
         
         int i;
         
@@ -279,7 +287,7 @@ class Agent extends Player {
          * labeling them as SHIP_SUNK on results grid. 
          */
         for(i = 0; i < size && !hits.isEmpty(); i++)
-            if(hits.top().x == lastHitX || hits.top().y == lastHitY)
+            if(hits.top().x == lastHit.x || hits.top().y == lastHit.y)
                 resultsGrid[hits.top().x][hits.pop().y] = SHIP_SUNK;
         
        /*ship may have been sunk while looking in adjacent cells
@@ -297,7 +305,7 @@ class Agent extends Player {
             computeWeightGrid();
         else{
             hits.push(mustExplore.pop());
-            computeWeightGrid(hits.top().x, hits.top().y);
+            computeWeightGrid(hits.top());
         }
             
         findAllDirections = false;

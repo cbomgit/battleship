@@ -7,11 +7,11 @@ package BattleShip;
  */
 abstract class Player {
 
-   int [][] resultsGrid;//keep track of hits/misses/ships sunk
-   int gridSize;
-   int shipsActive;
+   int  [][] resultsGrid;//keep track of hits/misses/ships sunk
+   int  gridSize; // size of the grid
+   int  shipsActive;
    Ship [] fleet;//represents users own ships
-   Ship[][] shipGrid;
+   Ship [][] shipGrid;
 
    public static final int ALL_SHIPS_SUNK = -4;
    public static final int SHIP_SUNK = -3;
@@ -19,6 +19,10 @@ abstract class Player {
    public static final int MISS = -1;
    public static final int HIT = -2;
 
+   /**
+    * 
+    * @param theSize size of the grid
+    */
    Player(int theSize){
 
        gridSize = theSize;
@@ -36,93 +40,139 @@ abstract class Player {
        createShips();
    }
 
+   /**
+    * create the player's ships.
+    */
    private void createShips(){
 
-       fleet[0] = new Ship("Aircraft carrier", 5);
-       fleet[1] = new Ship("Destroyer", 4);
-       fleet[2] = new Ship("Battleship", 3);
-       fleet[3] = new Ship("Submarine", 3);
-       fleet[4] = new Ship("Patrol boat", 2);
+       fleet[0] = new Ship(Ship.AIRCRAFT_CARRIER);
+       fleet[1] = new Ship(Ship.DESTROYER);
+       fleet[2] = new Ship(Ship.BATTLESHIP);
+       fleet[3] = new Ship(Ship.SUBMARINE);
+       fleet[4] = new Ship(Ship.PATROL_BOAT);
 
    }
    
+   /**
+    * @return size of the grid 
+    */
    public int getGridSize(){
       return gridSize;
    }
 
-   //returns the result from an opponents guess at x, y
-   public int opponentGuessedHere(int x, int y) {
+   /**
+    * Returns the result of an opponents guess.
+    * @param x x coordinate of guess.
+    * @param y y coordinate of guess.
+    * @return result of guess. 
+    */
+   public int opponentGuessedHere(Cell guess) {
 
-        if(shipGrid[x][y] == null)
+        if(shipGrid[guess.x][guess.y] == null)
            return MISS;
         else {
-           if(shipGrid[x][y].takeDamage()){
+           if(shipGrid[guess.x][guess.y].takeDamage()){
                if(--shipsActive == 0)
                    return ALL_SHIPS_SUNK;
                else
-                   return shipGrid[x][y].size();
+                   return shipGrid[guess.x][guess.y].size();
            }
 
            return HIT;
         }
    }
 
-   //sets an empty shipgrid
+   /**
+    * clears the ship grid.
+    */
    public void clearShipGrid(){
        for(int y = 0; y < gridSize; y++)
             for(int x = 0; x < gridSize; x++)
                 shipGrid[x][y] = null;
    }
-
-   //allocates a ship from x, y to x + shipSize, y
-   public void setHorizontalShip(int x, int y,  int whichShip) {
+   
+   /**
+    * Method to add a ship to User's grid
+    * @param target.x row where ship will be placed
+    * @param target.y column where ship will be placed
+    * @param whichShip index of fleet [] identifies ship to be allocated
+    */
+   public void setHorizontalShip(Cell target, int whichShip) {
 
         for (int i = 0; i < fleet[whichShip].size(); i++) {
-            shipGrid[x + i][y] = fleet[whichShip];
+            shipGrid[target.x + i][target.y] = fleet[whichShip];
         }
     }
    
-   //allocates a ship from x, y to x + shipSize, y
-   public void setVerticalShip(int x, int y, int whichShip) {
+   /**
+    * Same as setHorizontalShip, but for opposite direction
+    * @param target.x row where ship will be placed
+    * @param target.y column where ship will be place
+    * @param whichShip index of fleet [] identifies ship to be allocated
+    */
+   public void setVerticalShip(Cell target, int whichShip) {
 
         for (int i = 0; i < fleet[whichShip].size(); i++) {
-            shipGrid[x][y + i] = fleet[whichShip];
+            shipGrid[target.x][target.y + i] = fleet[whichShip];
         }
    }
    
-   //verifies that a ship starting at (x, y) and of length size
-    //does not overlap any other ships and does not fall out of the grid
-    public boolean canSetHorizontalShip(int x, int y, int size) {
+   /**
+    * assert that a ship can be place on grid without violating and
+    * of the game board constraints (ie not out of bounds, overlapping, etc).
+    * @param target.x start x of ship.
+    * @param target.y start y of ship.
+    * @param size size of ship in question.
+    * @return true if ship can be set, otherwise false.
+    */
+    public boolean canSetHorizontalShip(Cell target, int size) {
 
-        if(x + size > gridSize)
+        if(target.x + size > gridSize)
             return false;
 
         for(int i = 0; i < size; i++)
-            if(shipGrid[x + i][y] != null)
+            if(shipGrid[target.x + i][target.y] != null)
                 return false;
 
         return true;
     }
 
-    public boolean canSetVerticalShip(int x, int y, int size) {
+    /**
+    * assert that a ship can be place on grid without violating and
+    * of the game board constraints (ie not out of bounds, overlapping, etc).
+    * @param target.x start x of ship.
+    * @param target.y start y of ship.
+    * @param size size of ship in question.
+    * @return true if ship can be set, otherwise false.
+    */
+    public boolean canSetVerticalShip(Cell target, int size) {
 
-        if(y + size > gridSize)
+        if(target.y + size > gridSize)
             return false;
 
         for(int i = 0; i < size; i++)
-            if(shipGrid[x][y + i] != null)
+            if(shipGrid[target.x][target.y + i] != null)
                 return false;
 
         return true;
     }
     
-    /* returns false if user has already attempted
-     * a shot at the square at (x, y). 
+    /**
+     * assert that Player has not guessed at a location already
+     * @param x x coordinate of cell in question
+     * @param y y coordinate of cell in question
+     * @return true if (x, y) is unexplored, otherwise false
      */
 
-    public boolean verifyNewTarget(int x, int y){
-       return resultsGrid[x][y] == UNKNOWN;
+    public boolean verifyNewTarget(Cell target){
+       return resultsGrid[target.x][target.y] == UNKNOWN;
     }
     
-    public abstract void processResult(int result, int x, int y);
+    /**
+     * Abstract method to process the result of a guess.
+     * @param result result of guess
+     * @param x x coordinate of guess
+     * @param y y coordinate of guess
+     */
+    public abstract void processResult(int result, Cell lastAttempt);
 }

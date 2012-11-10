@@ -1,8 +1,7 @@
 package BattleShip;
 
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.util.Timer;
 import javax.swing.JOptionPane;
 
 /**
@@ -25,68 +24,48 @@ class DefaultController {
     public DefaultController(AbstractView b, int gridSize){
         
         playerOne = new User(gridSize);
-        playerTwo = new Agent(gridSize);
-        board = b;
-        verticalShipPreviewSet = false;
+        playerTwo = new Agent(gridSize);  
+        board = b;                       
+        verticalShipPreviewSet = false;   
         horizontalShipPreviewSet = false;
-        whichShip = 0;
+        whichShip = 0;                   
         board.addListenerToShipGrid(new GameSetUpListener());
     }
     
-    private class OpponentGridListener implements MouseListener{
+    private class OpponentGridListener extends MouseAdapter{
 
         @Override
         public void mouseClicked(MouseEvent e) {
             
-            Cell cell = board.getCoordinatesOfMouseClick(e);
+            Cell target = board.getCoordinatesOfMouseClick(e);
 
             /*must verify that user has not clicked on a square that has 
              * already been marked as a hit or a miss
              */
-            if(playerOne.verifyNewTarget(cell.x, cell.y)){
+            if(playerOne.verifyNewTarget(target)){
                     
                 //user takes a turn
-                int result = playerTwo.opponentGuessedHere(cell.x, cell.y);
-                playerOne.processResult(result, cell.x, cell.y);
-                board.updateShotGrid(result, cell.x, cell.y);
+                int result = playerTwo.opponentGuessedHere(target);
+                playerOne.processResult(result, target);
+                board.updateShotGrid(result, target);
 
                 if(result == Player.ALL_SHIPS_SUNK)
                    giveOptionForNewGameOrExit(true, this);
 
                 //computer opponent takes a turn
-                cell = playerTwo.generateTarget();
-                result = playerOne.opponentGuessedHere(cell.x, cell.y);
-                playerTwo.processResult(result, cell.x, cell.y);
-                board.updateShipGrid(result, cell.x, cell.y);
+                target = playerTwo.generateTarget();
+                result = playerOne.opponentGuessedHere(target);
+                playerTwo.processResult(result, target);
+                board.updateShipGrid(result, target);
 
                 if(result == Player.ALL_SHIPS_SUNK)
                     giveOptionForNewGameOrExit(false, this);  
                 
             }
         }
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-
-        }
     }
 
-    private class GameSetUpListener implements MouseListener{
+    private class GameSetUpListener extends MouseAdapter{
         
         /* the purpose of this listener is to allow the user to allocate 
          * his ships to his own board. As the user moves the mouse around
@@ -98,34 +77,30 @@ class DefaultController {
         @Override
          public void mouseClicked(MouseEvent e) {
             
-            Cell cell = board.getCoordinatesOfMouseClick(e);
-            
-                
+            Cell target = board.getCoordinatesOfMouseClick(e);
             int shipSize = playerOne.getShipSize(whichShip);
             
-            if(e.getButton() == MouseEvent.BUTTON1){
+            int direction = e.getButton() == MouseEvent.BUTTON1 ? 
+                    Ship.VERTICAL : Ship.HORIZONTAL;
+            
+            if(direction == Ship.VERTICAL && verticalShipPreviewSet){
                 
-                if(verticalShipPreviewSet){
-                    if(horizontalShipPreviewSet)
-                        board.removeHorizontalShip(cell.x + 1, cell.y, shipSize - 1);
-                    playerOne.setVerticalShip(cell.x, cell.y, whichShip);
+                if(horizontalShipPreviewSet)
+                    board.unpaintHorizontalShip(new Cell(target.x + 1, target.y), shipSize - 1);
+                playerOne.setVerticalShip(target, whichShip);
 
-                    whichShip++;
-                    verticalShipPreviewSet = horizontalShipPreviewSet = false;
-                }
-
+                whichShip++;
+                verticalShipPreviewSet = horizontalShipPreviewSet = false;
             }
-            else if(e.getButton() == MouseEvent.BUTTON3){
-                
-                if(horizontalShipPreviewSet){
-                    if(verticalShipPreviewSet)
-                        board.removeVerticalShip(cell.x, cell.y + 1, shipSize - 1);
-                     playerOne.setHorizontalShip(cell.x, cell.y, whichShip);
+            else if(direction == Ship.HORIZONTAL && horizontalShipPreviewSet){
+                if(verticalShipPreviewSet)
+                    board.unpaintVerticalShip(new Cell(target.x, target.y + 1), shipSize - 1);
+                playerOne.setHorizontalShip(target, whichShip);
 
-                    whichShip++;
-                    verticalShipPreviewSet = horizontalShipPreviewSet =false;
-                }
+                whichShip++;
+                verticalShipPreviewSet = horizontalShipPreviewSet =false;
             }
+            
 
             //gives user option to reconfigure ships or begin play
             if(whichShip == 5){
@@ -145,44 +120,34 @@ class DefaultController {
         @Override
         public void mouseEntered(MouseEvent e) {
             
-            Cell cell = board.getCoordinatesOfMouseClick(e);
+            Cell target = board.getCoordinatesOfMouseClick(e);
             
             int shipSize = playerOne.getShipSize(whichShip);
             board.updateInstruction(Ship.shipName(playerOne.getShipSize(whichShip)));
 
-            if(playerOne.canSetVerticalShip(cell.x, cell.y, shipSize)){
-                board.paintVerticalShip(cell.x, cell.y, shipSize);
+            if(playerOne.canSetVerticalShip(target, shipSize)){
+                board.paintVerticalShip(target, shipSize);
                 verticalShipPreviewSet = true;
             }
-            if(playerOne.canSetHorizontalShip(cell.x, cell.y, shipSize)){
-                board.paintHorizontalShip(cell.x, cell.y, shipSize);
+            if(playerOne.canSetHorizontalShip(target, shipSize)){
+                board.paintHorizontalShip(target, shipSize);
                 horizontalShipPreviewSet = true;
             }
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
-            Cell cell = board.getCoordinatesOfMouseClick(e);
+            Cell target = board.getCoordinatesOfMouseClick(e);
             
             int shipSize = playerOne.getShipSize(whichShip);
 
             if(verticalShipPreviewSet)
-                board.removeVerticalShip(cell.x, cell.y, shipSize);
+                board.unpaintVerticalShip(target, shipSize);
 
             if(horizontalShipPreviewSet)
-                board.removeHorizontalShip(cell.x, cell.y, shipSize);
+                board.unpaintHorizontalShip(target, shipSize);
 
             horizontalShipPreviewSet = verticalShipPreviewSet = false;
-            
-        }
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-            
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
             
         }
     }
@@ -198,7 +163,7 @@ class DefaultController {
     }
     
     //game is over.User can decide to ext app or begin a new game
-    public void giveOptionForNewGameOrExit(boolean whoWon, MouseListener current){
+    public void giveOptionForNewGameOrExit(boolean whoWon, MouseAdapter current){
        
       String message = whoWon ? "You win!!" : "You Lose!";
       Object [] options = {"Play Again", "Quit"};

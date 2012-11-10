@@ -16,19 +16,15 @@ import java.util.NoSuchElementException;
 public class Stack<AnyType> {
     
     private Node<AnyType> topOfStack;
-    private int size;
     
     public Stack(){
         topOfStack = null;
-        size = 0;
     }
 
     public void push(AnyType item) {
 
         topOfStack = new Node<AnyType>(item, topOfStack);
-        size++;
         
-
     }
 
     public AnyType pop() {
@@ -38,14 +34,12 @@ public class Stack<AnyType> {
         
         AnyType old = topOfStack.element;
         topOfStack = topOfStack.next;
-        size--;
         
         return old;
     }
     
     public void makeEmpty() {
         topOfStack = null;
-        size = 0;
     }
 
     public boolean isEmpty() {
@@ -66,12 +60,7 @@ public class Stack<AnyType> {
     public void clearStack(){
 
         topOfStack = null;
-        size = 0;
 
-    }
-    
-    public int size(){
-        return size;
     }
 
     AnyType next() {
