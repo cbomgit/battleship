@@ -5,7 +5,7 @@ package BattleShip;
  *
  * @author Christian
  */
-public class Cell {
+class Cell {
     
     public int x;
     public int y;
@@ -48,16 +48,5 @@ public class Cell {
             z = temp;
         }
         return w;
-    }
-    
-    @Override
-    public String toString(){
-        return x + ", " + y + " State: " + data;
-    }
-
-    void reset(int newX, int newY, int d) {
-        x = newX;
-        y = newY;
-        data = d;
     }
 }

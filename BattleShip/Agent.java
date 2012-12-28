@@ -86,7 +86,7 @@ class Agent extends Player {
             for(int y = 0; y < gridSize; y++)
                 for(int x = 0; x < gridSize; x++){
                     if(weightGrid[x][y] > guess.data)
-                        guess.reset(x, y, weightGrid[x][y]);
+                        guess = new Cell(x, y, weightGrid[x][y]);
                     weightGrid[x][y] = 0;
                 }
         }
@@ -258,7 +258,7 @@ class Agent extends Player {
 
             for(int i = 0; i < gridSize && fromX + i <= hit.x; i++) {
                 if(isValidHorizontal(fromX + i, hit.y, largestEnemyShip ))
-                transpose(fromX + i, hit.y, Ship.HORIZONTAL, largestEnemyShip);
+                    transpose(fromX + i, hit.y, Ship.HORIZONTAL, largestEnemyShip);
             }
 
             for(int i = 0; i < gridSize && fromY + i <= hit.y; i++) {

@@ -12,9 +12,6 @@ class Ship {
 
    private int hitsLeft;
    private int size;
-   private boolean isActive;
-   private Cell start;
-   private Cell end;
    
    public static final int AIRCRAFT_CARRIER = 5;
    public static final int DESTROYER = 4;
@@ -28,7 +25,6 @@ class Ship {
    Ship(int shipLives){
 
        hitsLeft = size = shipLives;
-       isActive = false;
    }
 
    public int size(){
@@ -37,16 +33,10 @@ class Ship {
    
    boolean takeDamage(){
 
-       if(--hitsLeft == 0){
-          isActive = false;
+       if(--hitsLeft == 0)
           return true;
-       }
-
+       
        return false;
-   }
-
-   public boolean isThisShipSunk(){
-      return isActive;
    }
 
    public static String shipName(int size){

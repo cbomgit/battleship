@@ -17,7 +17,7 @@ import javax.swing.*;
  */
 class DefaultView extends AbstractView{
    
-   public static final String INSTRUCTION = "Left-Click for vertical ship."
+    private static final String INSTRUCTION = "Left-Click for vertical ship."
             + " Right-Click for horizontal ship.";
     
     private GridButton [][] shipGrid; //display User's ships
