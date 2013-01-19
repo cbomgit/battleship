@@ -55,11 +55,14 @@ class DefaultController {
                 //computer opponent takes a turn
                 target = playerTwo.generateTarget();
                 result = playerOne.opponentGuessedHere(target);
-                playerTwo.processResult(result, target);
                 board.updateShipGrid(result, target);
-
+                
                 if(result == Player.ALL_SHIPS_SUNK)
-                    giveOptionForNewGameOrExit(false, this);  
+                    giveOptionForNewGameOrExit(false, this); 
+                playerTwo.processResult(result, target);
+                
+
+                 
                 
             }
         }

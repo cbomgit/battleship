@@ -31,11 +31,12 @@ abstract class Player {
        shipGrid = new Ship[theSize][theSize];
        fleet = new Ship[5];
 
-       for(int y = 0; y < theSize; y++)
+       for(int y = 0; y < theSize; y++){
            for(int x = 0; x < theSize; x++){
                resultsGrid[x][y] = UNKNOWN;
                shipGrid[x][y] = null;
            }
+       }
 
        createShips();
    }
@@ -112,9 +113,9 @@ abstract class Player {
     */
    public void setVerticalShip(Cell target, int whichShip) {
 
-        for (int i = 0; i < fleet[whichShip].size(); i++) {
+        for (int i = 0; i < fleet[whichShip].size(); i++) 
             shipGrid[target.x][target.y + i] = fleet[whichShip];
-        }
+        
    }
    
    /**

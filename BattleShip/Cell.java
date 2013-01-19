@@ -9,7 +9,7 @@ class Cell {
     
     public int x;
     public int y;
-    public int data;
+    public double data;
     
     public Cell(){
         this(0, 0);
@@ -21,7 +21,7 @@ class Cell {
         data = Player.UNKNOWN;
     }
     
-    public Cell(int a, int b, int s){
+    public Cell(int a, int b, double s){
         x = a;
         y = b;
         data = s;

@@ -1,18 +1,16 @@
 package BattleShip;
 
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Random;
 
 /**
  *
- * @author Christian
+ * @author Christian Boman
  */
 
 class Agent extends Player {
     
-    int [][] weightGrid;                   //likelihood of a ship overlapping x, y
-    private LinkedList<Integer> enemyFleet;//keep track of which ships are sunk
+    double [][] weightGrid;                   //likelihood of a ship overlapping x, y
+    private int [] enemyFleet;//keep track of which ships are sunk
     private Stack<Cell> hits;              //keep track of previous hits
     private Stack<Cell> mustExplore;       //cells that might have hits adjacent
     
@@ -23,7 +21,7 @@ class Agent extends Player {
         
         super(theSize);    
         setEnemyFleet();
-        weightGrid = new int[gridSize][gridSize];
+        weightGrid = new double[gridSize][gridSize];
         findAllDirections = false;
         
         hits = new Stack<Cell>();
@@ -37,12 +35,13 @@ class Agent extends Player {
      */
     private void setEnemyFleet(){
        
-      enemyFleet = new LinkedList<Integer>();
-      enemyFleet.add(Ship.AIRCRAFT_CARRIER);
-      enemyFleet.add(Ship.DESTROYER);
-      enemyFleet.add(Ship.BATTLESHIP);
-      enemyFleet.add(Ship.SUBMARINE);
-      enemyFleet.add(Ship.PATROL_BOAT);
+      enemyFleet = new int[5];
+      
+      enemyFleet[0] = Ship.AIRCRAFT_CARRIER;
+      enemyFleet[1] = Ship.DESTROYER;
+      enemyFleet[2] = Ship.BATTLESHIP;
+      enemyFleet[3] = Ship.SUBMARINE;
+      enemyFleet[4] = Ship.PATROL_BOAT;
     }
     
     /**
@@ -113,7 +112,9 @@ class Agent extends Player {
                 guess = generateTarget();
             }
         }
+        
         return guess;
+                                                                                
     }
     
     /**
@@ -123,10 +124,10 @@ class Agent extends Player {
      */
     private Cell guessAroundAHit(Cell hit){
              
-        Cell a = new Cell(hit.x + 1, hit.y, 0);
-        Cell b = new Cell(hit.x - 1, hit.y, 0);
-        Cell c = new Cell(hit.x , hit.y - 1, 0);
-        Cell d = new Cell(hit.x, hit.y + 1, 0);
+        Cell a = new Cell(hit.x + 1, hit.y, 0.0);
+        Cell b = new Cell(hit.x - 1, hit.y, 0.0);
+        Cell c = new Cell(hit.x , hit.y - 1, 0.0);
+        Cell d = new Cell(hit.x, hit.y + 1, 0.0);
         
         //only valid cells, and unexplored cells considered
         if(hit.x < gridSize - 1 && resultsGrid[hit.x + 1][hit.y] == Player.UNKNOWN)
@@ -166,7 +167,7 @@ class Agent extends Player {
         }
         else{ //a ship has been sunk. Result == size of sunk ship
             resultsGrid[lastAttempt.x][lastAttempt.y] = SHIP_SUNK;
-            enemyFleet.remove(new Integer(result)); 
+            markShipAsSunk(result); 
             handleSunkShip(result - 1, lastAttempt);
         }
     }
@@ -225,21 +226,50 @@ class Agent extends Player {
     private void computeWeightGrid(){
         
         clearWeightGrid();
-        Iterator<Integer> itr = enemyFleet.iterator();
+        double sum = 0;
+//        for(int whichShip = 0; whichShip < enemyFleet.length; whichShip++){
+//                       
+//            for(int y = 0; y < gridSize; y++){
+//                for(int x = 0; x < gridSize; x++){
+//                    if(isValidHorizontal(x, y, enemyFleet[whichShip]))
+//                        transpose(x, y, Ship.HORIZONTAL, enemyFleet[whichShip]);
+//                    if(isValidVertical(x, y, enemyFleet[whichShip]))
+//                        transpose(x, y, Ship.VERTICAL, enemyFleet[whichShip]);
+//                }
+//            }        
+//        }
         
-        while(itr.hasNext()){
-           
-            int shipSize = itr.next();
-            
-            for(int y = 0; y < gridSize; y++){
-                for(int x = 0; x < gridSize; x++){
-                    if(isValidHorizontal(x, y, shipSize))
-                        transpose(x, y, Ship.HORIZONTAL, shipSize);
-                    if(isValidVertical(x, y, shipSize))
-                        transpose(x, y, Ship.VERTICAL, shipSize);
-                }
-            }        
-        } 
+        for(int y = 0; y < gridSize; y++){
+            for(int x = 0; x < gridSize; x++){
+                
+                
+                int whichShip = 0;
+                
+                while(whichShip < enemyFleet.length &&
+                        !isValidHorizontal(x, y, enemyFleet[whichShip]))
+                    whichShip++;
+                
+                while(whichShip < enemyFleet.length)
+                    transpose(x, y, Ship.HORIZONTAL, enemyFleet[whichShip++]);
+                
+                whichShip = 0;
+                
+                while(whichShip < enemyFleet.length &&
+                        !isValidVertical(x, y, enemyFleet[whichShip]))
+                    whichShip++;
+                
+                while(whichShip < enemyFleet.length)
+                    transpose(x, y, Ship.VERTICAL, enemyFleet[whichShip++]);
+                
+                sum+=weightGrid[x][y];
+                
+            }
+        }
+        
+        for(int y = 0; y < gridSize; y++){
+            for(int x = 0; x < gridSize; x++)
+                weightGrid[x][y] /= sum;
+        }
     }
     
     /*when a ship has been found, the entire weight grid is zeroed out, with
@@ -248,22 +278,22 @@ class Agent extends Player {
      */
     private void computeWeightGrid(Cell hit){
        
-        Iterator<Integer> itr = enemyFleet.iterator();
         
-        while(itr.hasNext()){
+        for(int whichShip = 0; whichShip < enemyFleet.length; whichShip++){
            
-            int largestEnemyShip = itr.next();
-            int fromX = hit.x - largestEnemyShip < 0 ? 0 : hit.x - largestEnemyShip + 1;
-            int fromY = hit.y - largestEnemyShip < 0 ? 0 : hit.y - largestEnemyShip + 1;
+            int fromX = hit.x - enemyFleet[whichShip] < 0 ? 
+                    0 : hit.x - enemyFleet[whichShip] + 1;
+            int fromY = hit.y - enemyFleet[whichShip] < 0 ? 
+                    0 : hit.y - enemyFleet[whichShip] + 1;
 
             for(int i = 0; i < gridSize && fromX + i <= hit.x; i++) {
-                if(isValidHorizontal(fromX + i, hit.y, largestEnemyShip ))
-                    transpose(fromX + i, hit.y, Ship.HORIZONTAL, largestEnemyShip);
+                if(isValidHorizontal(fromX + i, hit.y, enemyFleet[whichShip] ))
+                    transpose(fromX + i, hit.y, Ship.HORIZONTAL, enemyFleet[whichShip]);
             }
 
             for(int i = 0; i < gridSize && fromY + i <= hit.y; i++) {
-                if(isValidVertical(hit.x, fromY + i, largestEnemyShip))
-                    transpose(hit.x, fromY + i, Ship.VERTICAL, largestEnemyShip);
+                if(isValidVertical(hit.x, fromY + i, enemyFleet[whichShip]))
+                    transpose(hit.x, fromY + i, Ship.VERTICAL, enemyFleet[whichShip]);
             }
             
         }
@@ -307,7 +337,31 @@ class Agent extends Player {
             hits.push(mustExplore.pop());
             computeWeightGrid(hits.top());
         }
-            
+          
         findAllDirections = false;
+       
+    }
+
+    private void markShipAsSunk(int shipSize) {
+        
+        
+        int [] outdatedEnemyFleet = enemyFleet;
+        
+        /* there is an annoying special case to consider when copying over the 
+         * old enemy fleet array: there are two ships of the same size. This 
+         * boolean allows us to ignore the first one and copy the second one
+         * without the need for separate loops.
+         */ 
+        
+        boolean searching = true; 
+  
+        enemyFleet = new int[outdatedEnemyFleet.length - 1];
+        
+        for(int i = 0, j = 0; i < outdatedEnemyFleet.length; i++){
+            if(searching && outdatedEnemyFleet[i] == shipSize)
+                searching = false;
+            else
+                enemyFleet[j++] = outdatedEnemyFleet[i];
+        }   
     }
 }

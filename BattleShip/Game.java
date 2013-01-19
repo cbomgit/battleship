@@ -12,6 +12,7 @@ public class Game {
     private DefaultController controller;
     //the controller will contain references to the players
     
+    
     private static final int DEFAULT_GRID_SIZE = 11;
     
     public Game(){
