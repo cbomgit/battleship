@@ -56,14 +56,11 @@ class DefaultController {
                 target = playerTwo.generateTarget();
                 result = playerOne.opponentGuessedHere(target);
                 board.updateShipGrid(result, target);
+                playerTwo.processResult(result, target);
                 
                 if(result == Player.ALL_SHIPS_SUNK)
                     giveOptionForNewGameOrExit(false, this); 
-                playerTwo.processResult(result, target);
-                
-
-                 
-                
+        
             }
         }
     }

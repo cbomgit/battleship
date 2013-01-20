@@ -166,9 +166,11 @@ class Agent extends Player {
             }
         }
         else{ //a ship has been sunk. Result == size of sunk ship
-            resultsGrid[lastAttempt.x][lastAttempt.y] = SHIP_SUNK;
-            markShipAsSunk(result); 
-            handleSunkShip(result - 1, lastAttempt);
+            if(enemyFleet.length > 1){ //don't bother if the last ship is sunk
+                resultsGrid[lastAttempt.x][lastAttempt.y] = SHIP_SUNK;
+                markShipAsSunk(result); 
+                handleSunkShip(result - 1, lastAttempt);
+            }
         }
     }
     
@@ -279,23 +281,50 @@ class Agent extends Player {
     private void computeWeightGrid(Cell hit){
        
         
-        for(int whichShip = 0; whichShip < enemyFleet.length; whichShip++){
-           
-            int fromX = hit.x - enemyFleet[whichShip] < 0 ? 
-                    0 : hit.x - enemyFleet[whichShip] + 1;
-            int fromY = hit.y - enemyFleet[whichShip] < 0 ? 
-                    0 : hit.y - enemyFleet[whichShip] + 1;
-
-            for(int i = 0; i < gridSize && fromX + i <= hit.x; i++) {
-                if(isValidHorizontal(fromX + i, hit.y, enemyFleet[whichShip] ))
-                    transpose(fromX + i, hit.y, Ship.HORIZONTAL, enemyFleet[whichShip]);
-            }
-
-            for(int i = 0; i < gridSize && fromY + i <= hit.y; i++) {
-                if(isValidVertical(hit.x, fromY + i, enemyFleet[whichShip]))
-                    transpose(hit.x, fromY + i, Ship.VERTICAL, enemyFleet[whichShip]);
-            }
+//        for(int whichShip = 0; whichShip < enemyFleet.length; whichShip++){
+//           
+//            int fromX = hit.x - enemyFleet[whichShip] < 0 ? 
+//                    0 : hit.x - enemyFleet[whichShip] + 1;
+//            int fromY = hit.y - enemyFleet[whichShip] < 0 ? 
+//                    0 : hit.y - enemyFleet[whichShip] + 1;
+//
+//            for(int i = 0; i < gridSize && fromX + i <= hit.x; i++) {
+//                if(isValidHorizontal(fromX + i, hit.y, enemyFleet[whichShip] ))
+//                    transpose(fromX + i, hit.y, Ship.HORIZONTAL, enemyFleet[whichShip]);
+//            }
+//
+//            for(int i = 0; i < gridSize && fromY + i <= hit.y; i++) {
+//                if(isValidVertical(hit.x, fromY + i, enemyFleet[whichShip]))
+//                    transpose(hit.x, fromY + i, Ship.VERTICAL, enemyFleet[whichShip]);
+//            }
+//            
+//        }
+        
+        
+        int fromX = hit.x - enemyFleet[0] < 0 ? 0 : hit.x - enemyFleet[0] + 1;
+        int fromY = hit.y - enemyFleet[0] < 0 ? 0 : hit.y - enemyFleet[0] + 1; 
+        
+        for(int i = 0; fromX + i <= hit.x; i++){
             
+            int whichShip = 0;
+            
+            while(whichShip < enemyFleet.length &&
+                    !isValidHorizontal(fromX + i, hit.y, enemyFleet[whichShip]))
+                whichShip++;
+                
+            while(whichShip < enemyFleet.length)
+                transpose(fromX + i, hit.y, Ship.HORIZONTAL, enemyFleet[whichShip++]);
+        }
+        
+        for(int i = 0; fromY + i <= hit.y; i++){
+            
+            int whichShip = 0;
+            while(whichShip < enemyFleet.length &&
+                !isValidVertical(hit.x, fromY + i, enemyFleet[whichShip]))
+                whichShip++;
+                
+            while(whichShip < enemyFleet.length)
+                transpose(hit.x, fromY + i, Ship.VERTICAL, enemyFleet[whichShip++]);
         }
         
         weightGrid[hit.x][hit.y] = Player.HIT;
@@ -346,22 +375,23 @@ class Agent extends Player {
         
         
         int [] outdatedEnemyFleet = enemyFleet;
-        
+
         /* there is an annoying special case to consider when copying over the 
          * old enemy fleet array: there are two ships of the same size. This 
          * boolean allows us to ignore the first one and copy the second one
          * without the need for separate loops.
          */ 
-        
+
         boolean searching = true; 
-  
+
         enemyFleet = new int[outdatedEnemyFleet.length - 1];
-        
+
         for(int i = 0, j = 0; i < outdatedEnemyFleet.length; i++){
             if(searching && outdatedEnemyFleet[i] == shipSize)
                 searching = false;
             else
                 enemyFleet[j++] = outdatedEnemyFleet[i];
-        }   
+        }
+
     }
 }
