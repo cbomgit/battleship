@@ -111,50 +111,50 @@ class DefaultView extends AbstractView{
                 shipGrid[x][y].addMouseListener(m);
     }
     
-    /*methods for highlighting, setting and removing a ship from the users 
+    /* methods for highlighting, setting and removing a ship from the users 
      * ship grid
      */
     @Override
-    public void paintVerticalShip(Cell ship, int size) {
+    public void paintVerticalShip(Point ship, int size) {
         
         for(int i = 0; i < size; i++)
             shipGrid[ship.x][ship.y + i].setBackground(Color.GRAY);
     }
     
     @Override
-    public void paintHorizontalShip(Cell ship, int size) {
+    public void paintHorizontalShip(Point ship, int size) {
         
         for(int i = 0; i < size; i++)
             shipGrid[ship.x + i][ship.y].setBackground(Color.GRAY);
     }
     
     @Override
-    public void unpaintVerticalShip(Cell ship, int size){
+    public void unpaintVerticalShip(Point ship, int size){
         
         for(int i = 0; i < size; i++)
             shipGrid[ship.x][ship.y + i].setBackground(Color.BLACK);
     }
     
     @Override
-    public void unpaintHorizontalShip(Cell ship, int size){
+    public void unpaintHorizontalShip(Point ship, int size){
         for(int i = 0; i < size; i++)
             shipGrid[ship.x + i][ship.y].setBackground(Color.BLACK);
     }
 
     //refresh view to indicate result of opponent guesses
     @Override
-    public void updateShotGrid(int result, Cell target) {
+    public void updateShotGrid(int result, Point target) {
         
-        if(result == User.MISS){
+        if(result == Point.MISS){
             hitMissGrid[target.x][target.y].setBackground(Color.WHITE);
             gameMessage.setText("You missed at " + target.x + ", " + target.y);
         }
         else{
             hitMissGrid[target.x][target.y].setBackground(Color.RED);
-            if(result == Player.HIT)
+            if(result == Point.HIT)
                 gameMessage.setText("You damaged CPU's ship at " + target.x + ", " + target.y);
             else
-                gameMessage.setText("You sunk CPU's " + Ship.shipName(result));
+                gameMessage.setText("You sunk CPU's ship");
         }
         
         
@@ -162,17 +162,17 @@ class DefaultView extends AbstractView{
     
     //refresh view to indicate result of user guesses
     @Override
-    public void updateShipGrid(int result, Cell target) {
-        if(result == User.MISS){
+    public void updateShipGrid(int result, Point target) {
+        if(result == Point.MISS){
             shipGrid[target.x][target.y].setBackground(Color.WHITE);
             gameMessage.append("\nCPU missed at " + target.x + ", " + target.y);
         }
         else{
             shipGrid[target.x][target.y].setBackground(Color.RED);
-            if(result == Player.HIT)
+            if(result == Point.HIT)
                 gameMessage.append("\nCPU damaged your ship at " + target.x + ", " + target.y);
             else
-                gameMessage.append("\nCPU sunk your " + Ship.shipName(result));
+                gameMessage.append("\nCPU sunk your ship");
         }
         
         
@@ -188,14 +188,14 @@ class DefaultView extends AbstractView{
     //mouse event represents a mouse click on a grid. 
     //returns (x, y) location of click
     @Override
-    public Cell getCoordinatesOfMouseClick(MouseEvent e) {
+    public Point getCoordinatesOfMouseClick(MouseEvent e) {
         
         GridButton b = null;
         
         if(e.getComponent() instanceof GridButton)
             b = (GridButton) e.getComponent();
         
-        return new Cell(b.x, b.y);
+        return new Point(b.x, b.y);
     }
 
     //erases the board

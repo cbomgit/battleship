@@ -12,42 +12,49 @@ class Ship {
 
    private int hitsLeft;
    private int size;
+   private int name;
    
    public static final int AIRCRAFT_CARRIER = 5;
-   public static final int DESTROYER = 4;
-   public static final int BATTLESHIP = 3;
-   public static final int SUBMARINE = 3;
-   public static final int PATROL_BOAT = 2;
+   public static final int DESTROYER        = 4;
+   public static final int BATTLESHIP       = 3;
+   public static final int SUBMARINE        = 3;
+   public static final int PATROL_BOAT      = 2;
+   
+   public static final String [] shipNames  = { "Aircraft Carrier",
+                                                "Destroyer",
+                                                "BATTLESHIP",
+                                                "SUBMARINE",
+                                                "PATROL_BOAT"};
+   
+   public static final int [] shipLengths = {AIRCRAFT_CARRIER,
+                                             DESTROYER,
+                                             BATTLESHIP,
+                                             SUBMARINE,                              
+                                             PATROL_BOAT};
+   
 
-   public static final int VERTICAL = 0;
+   public static final int VERTICAL   = 0;
    public static final int HORIZONTAL = 1;
 
-   Ship(int shipLives){
-
-       hitsLeft = size = shipLives;
+   Ship(int shipLives, int shipName){
+       
+       size = hitsLeft = shipLives;
+       name = shipName;
+       
    }
 
    public int size(){
        return size;
    }
    
-   boolean takeDamage(){
+   
+   int decrement(){
 
-       if(--hitsLeft == 0)
-          return true;
-       
-       return false;
+      return --hitsLeft == 0 ? Point.SHIP_SUNK : Point.HIT;
    }
-
-   public static String shipName(int size){
-
-      if(size == AIRCRAFT_CARRIER)
-          return "Aircraft Carrier";
-      else if(size == DESTROYER)
-          return "Destroyer";
-      else if(size == SUBMARINE)
-          return "Submarine or Battleship";
-      else
-          return "Patrol Boat";
+   
+   public String getName() {
+       return shipNames[name];
    }
+   
 }

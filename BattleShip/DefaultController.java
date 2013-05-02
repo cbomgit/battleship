@@ -29,15 +29,15 @@ class DefaultController {
         verticalShipPreviewSet = false;   
         horizontalShipPreviewSet = false;
         whichShip = 0;                   
-        board.addListenerToShipGrid(new GameSetUpListener());
+        board.addListenerToShipGrid(new SetupModeListener());
     }
     
-    private class OpponentGridListener extends MouseAdapter{
+    private class BattleModeListener extends MouseAdapter{
 
         @Override
         public void mouseClicked(MouseEvent e) {
             
-            Cell target = board.getCoordinatesOfMouseClick(e);
+            Point target = board.getCoordinatesOfMouseClick(e);
 
             /*must verify that user has not clicked on a square that has 
              * already been marked as a hit or a miss
@@ -49,7 +49,7 @@ class DefaultController {
                 playerOne.processResult(result, target);
                 board.updateShotGrid(result, target);
 
-                if(result == Player.ALL_SHIPS_SUNK)
+                if(result == Point.ALL_SHIPS_SUNK)
                    giveOptionForNewGameOrExit(true, this);
 
                 //computer opponent takes a turn
@@ -58,14 +58,14 @@ class DefaultController {
                 board.updateShipGrid(result, target);
                 playerTwo.processResult(result, target);
                 
-                if(result == Player.ALL_SHIPS_SUNK)
+                if(result == Point.ALL_SHIPS_SUNK)
                     giveOptionForNewGameOrExit(false, this); 
         
             }
         }
     }
 
-    private class GameSetUpListener extends MouseAdapter{
+    private class SetupModeListener extends MouseAdapter{
         
         /* the purpose of this listener is to allow the user to allocate 
          * his ships to his own board. As the user moves the mouse around
@@ -77,24 +77,31 @@ class DefaultController {
         @Override
          public void mouseClicked(MouseEvent e) {
             
-            Cell target = board.getCoordinatesOfMouseClick(e);
+            Point target = board.getCoordinatesOfMouseClick(e);
             int shipSize = playerOne.getShipSize(whichShip);
             
             int direction = e.getButton() == MouseEvent.BUTTON1 ? 
                     Ship.VERTICAL : Ship.HORIZONTAL;
             
+            /*user picked the Vertical direction for a ship. Only set the ship
+             *if our preview is set. A preview is only displayed if the ship
+             *can be placed on the grid without breaking any rules
+             */
+            
             if(direction == Ship.VERTICAL && verticalShipPreviewSet){
                 
+                //remove the horizontal preview if it was displayed
                 if(horizontalShipPreviewSet)
-                    board.unpaintHorizontalShip(new Cell(target.x + 1, target.y), shipSize - 1);
-                playerOne.setVerticalShip(target, whichShip);
+                    board.unpaintHorizontalShip(new Point(target.x + 1, target.y), shipSize - 1);
+                
+                playerOne.setVerticalShip(target, whichShip); //set the ship
 
                 whichShip++;
                 verticalShipPreviewSet = horizontalShipPreviewSet = false;
             }
             else if(direction == Ship.HORIZONTAL && horizontalShipPreviewSet){
                 if(verticalShipPreviewSet)
-                    board.unpaintVerticalShip(new Cell(target.x, target.y + 1), shipSize - 1);
+                    board.unpaintVerticalShip(new Point(target.x, target.y + 1), shipSize - 1);
                 playerOne.setHorizontalShip(target, whichShip);
 
                 whichShip++;
@@ -108,7 +115,7 @@ class DefaultController {
                 int option = giveOptionToReconfigureShips();
                 
                 if(option == JOptionPane.YES_OPTION)
-                    board.switchListenersToOpponentGrid(new OpponentGridListener(), this);
+                    board.switchListenersToOpponentGrid(new BattleModeListener(), this);
                 else{
                     board.clearTheBoard();
                     playerOne.clearShipGrid();
@@ -120,15 +127,20 @@ class DefaultController {
         @Override
         public void mouseEntered(MouseEvent e) {
             
-            Cell target = board.getCoordinatesOfMouseClick(e);
+            Point target = board.getCoordinatesOfMouseClick(e);
             
             int shipSize = playerOne.getShipSize(whichShip);
-            board.updateInstruction(Ship.shipName(playerOne.getShipSize(whichShip)));
+            board.updateInstruction(Ship.shipNames[whichShip]);
+            
+            /*the view will only display a preview for a ship if it can be 
+             * legally placed on the given coordinates
+             */
 
             if(playerOne.canSetVerticalShip(target, shipSize)){
                 board.paintVerticalShip(target, shipSize);
                 verticalShipPreviewSet = true;
             }
+            
             if(playerOne.canSetHorizontalShip(target, shipSize)){
                 board.paintHorizontalShip(target, shipSize);
                 horizontalShipPreviewSet = true;
@@ -137,10 +149,11 @@ class DefaultController {
 
         @Override
         public void mouseExited(MouseEvent e) {
-            Cell target = board.getCoordinatesOfMouseClick(e);
+            Point target = board.getCoordinatesOfMouseClick(e);
             
             int shipSize = playerOne.getShipSize(whichShip);
-
+            
+            //unpaint any displayed previews
             if(verticalShipPreviewSet)
                 board.unpaintVerticalShip(target, shipSize);
 
@@ -154,7 +167,7 @@ class DefaultController {
     
     //show menu that prompts user to confirm placement of ships or restart set
     //up
-    public int giveOptionToReconfigureShips(){
+    private int giveOptionToReconfigureShips(){
        
        Object [] options = {"Go to War!", "Re-deploy"};
        return JOptionPane.showOptionDialog(null, "Deployment complete?", 
@@ -163,7 +176,7 @@ class DefaultController {
     }
     
     //game is over.User can decide to ext app or begin a new game
-    public void giveOptionForNewGameOrExit(boolean whoWon, MouseAdapter current){
+    private void giveOptionForNewGameOrExit(boolean whoWon, MouseAdapter current){
        
       String message = whoWon ? "You win!!" : "You Lose!";
       Object [] options = {"Play Again", "Quit"};
@@ -177,7 +190,7 @@ class DefaultController {
           System.exit(0);
       else{
           board.clearTheBoard();
-          board.switchListenersToGameSetUp(current, new GameSetUpListener());
+          board.switchListenersToGameSetUp(current, new SetupModeListener());
           playerOne = new User(playerOne.getGridSize());
           playerTwo = new Agent(playerTwo.getGridSize());
           whichShip = 0;

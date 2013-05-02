@@ -2,11 +2,12 @@
 package BattleShip;
 
 
+
 /**
  *
  * @author Christian
  */
-public class Game {
+public class Main {
 
     private AbstractView gameBoardOne;
     private DefaultController controller;
@@ -15,7 +16,7 @@ public class Game {
     
     private static final int DEFAULT_GRID_SIZE = 11;
     
-    public Game(){
+    public Main(){
         
         /*default constructor creates a one player game with the default
          * controller and game board
@@ -26,7 +27,7 @@ public class Game {
 
     }
     
-    public Game(AbstractView myView){
+    public Main(AbstractView myView){
        
        gameBoardOne = myView == null ? new DefaultView(DEFAULT_GRID_SIZE ) : myView;
        gameBoardOne.setVisible(true);
@@ -39,7 +40,9 @@ public class Game {
     public static void main(String[] args) {
         
         
-        Game theGame = new Game();
+        Main theGame = new Main();
+        
+            
     }
     
 }

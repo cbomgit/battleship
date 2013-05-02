@@ -16,7 +16,7 @@ package BattleShip;
     //updates the users hit/miss grid with the results of the 
     //last attempt.
    @Override
-    public void processResult(int result, Cell lastAttempt) {
+    public void processResult(int result, Point lastAttempt) {
         resultsGrid[lastAttempt.x][lastAttempt.y] = result;
     }
    
